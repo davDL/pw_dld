@@ -1,0 +1,245 @@
+head {
+    background-color: #f5f6f8;
+}
+
+html,body {
+    background-color: #f5f6f8;
+}
+
+p {
+    font-family: 'Verdana';
+    color: #999999;
+    margin-left: 30px;
+    margin-top: 30px;
+}
+
+th,td {
+   font-size: 14px;
+   text-align: center;
+   vertical-align: middle;
+}
+
+h5,h2,h6 {
+ color: white;
+}
+
+.pagination {
+      --bs-pagination-color: #365185;
+      --bs-pagination-hover-color: #365185;
+      --bs-pagination-active-color: #fff;
+      --bs-pagination-active-border-color: #365185;
+      --bs-pagination-active-bg: #365185;
+      --bs-pagination-hover-bg: #eeeeee;
+}
+
+textarea:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="datetime"]:focus,
+input[type="datetime-local"]:focus,
+input[type="date"]:focus,
+input[type="month"]:focus,
+input[type="time"]:focus,
+input[type="week"]:focus,
+input[type="number"]:focus,
+input[type="email"]:focus,
+input[type="url"]:focus,
+input[type="search"]:focus,
+input[type="tel"]:focus,
+input[type="color"]:focus,
+.uneditable-input:focus {
+  border-color: #ffffff;
+  box-shadow: 0 0px 0px rgba(0, 0, 0, 0) inset, 0 0 8px rgba(0, 0, 0, 0);
+  outline: 0 none;
+}
+
+.form-control {
+    border: 0;
+}
+
+.dashboard-container {
+    height:100%;
+    height:100vh;
+    display:flex;
+    flex-direction:row;
+    background-color: #f5f6f8;
+    justify-content: center;
+}
+
+.menu {
+    height:100vh;
+    display: block;
+    overflow: auto;
+    padding:4px;
+    flex-basis:300px;
+    max-width:300px;
+    margin-right: 15px;
+    margin-top: 15px;
+    background-color: #ffffff;
+    border-top-right-radius: 10px;
+    border-top-left-radius: 10px;
+}
+
+.side {
+    height:100vh;
+    display: block;
+    overflow: auto;
+    max-width:300px;
+    padding:4px;
+    margin-top: 15px;
+    background-color: #ffffff;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    max-inline-size: fit-content;
+}
+
+.sideHead {
+    display:flex;
+    color:#ffffff;
+    box-shadow: 5px 5px 5px #eceef2;
+}
+
+.elevatedCardContent {
+    height:50px;
+    weight:50px;
+    margin-top:10px;
+}
+
+.sideHeadText{
+    color:#e77bfb;
+    margin:20px
+}
+
+.tableSection{
+    padding:8px;
+    border-radius:10px;
+
+    &.elevation {
+        box-shadow: 5px 5px 5px 5px #eceef2;
+    }
+}
+
+.tableBody {
+    width:100%;
+    margin:0px;
+}
+
+.tableTitle {
+    border-top: 0.3mm solid #dee2e6;
+    border-left: 0.3mm solid #dee2e6;
+    border-right: 0.3mm solid #dee2e6;
+    border-top-right-radius: 20px;
+    border-top-left-radius: 20px;
+    padding:16px;
+}
+
+.tableFooter {
+    border-left: 0.3mm solid #dee2e6;
+    border-right: 0.3mm solid #dee2e6;
+    border-bottom: 0.3mm solid #dee2e6;
+    border-bottom-right-radius: 20px;
+    border-bottom-left-radius: 20px;
+    padding:8px;
+}
+
+.textStyleH {
+    color:'white'
+}
+
+.cardBase{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height:120px;
+    min-width:400px;
+    margin:10px;
+    border-radius: 10px;
+
+    &.purple {
+        background: linear-gradient(to right, #7f54f0, #738df8);
+    }
+
+    &.pink {
+        background: linear-gradient(to right, #fd9d9e, #fe658a);
+    }
+
+    &.orange {
+        background: linear-gradient(to right, #ff7946, #ffb177);
+    }
+
+    &.blue {
+        background: linear-gradient(to right, #2c91e2, #00e2fb);
+    }
+
+    &.lightViolet {
+        background: linear-gradient(to right, #eb9ae2, #696ff0);
+    }
+
+    &.violet {
+        background: linear-gradient(to right, #b86ad3, #f06199);
+    }
+}
+
+.cardImage {
+    height: 50px;
+    weight: 50px;
+    margin-top: 10px;
+}
+
+.alignCenterContainer {
+    display:flex;
+    flex-direction:row;
+}
+
+.inRowTables {
+    display:flex;
+    flex-direction:row;
+    justify-content: space-between;
+}
+
+.tableCellProgress {
+    height:8px;
+    margin-left:4px;
+    margin-right:4px;
+    box-shadow: 5px 5px 5px 5px #eceef2;
+}
+
+.textCellHeader {
+    font-size: 8pt;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.mid{
+        max-width: 100px;
+        min-width: 100px;
+    }
+}
+
+.textCell {
+    font-size: 8pt;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &.mid {
+        max-width:120px;
+        min-width:120px;
+    }
+}
+
+.textCellHeaderFull {
+    font-size: 8pt;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.textCellFull {
+    font-size: 8pt;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
