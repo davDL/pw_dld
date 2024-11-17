@@ -2,20 +2,18 @@ from dash import html, dcc
 import dash_bootstrap_components as dbc
 
 def sidebar_header_element_dashboard(icon, status_icon):
-    return dbc.Container([
+    return html.Div([
         dbc.Container([
                 html.Img(src=icon,
                          style={'width': '35px', 'height': '25px', 'margin-right': '4px'}),
                 html.Span(
-                    "Dashboard", style={'text-decoration': 'underline', 'color': '#e77bfb'},
-                    id="collapse-button1",
-                    n_clicks=0,
+                    "Dashboard", style={'text-decoration': 'underline', 'color': '#e77bfb'}
                 ),
             ]),
             html.Img(src=status_icon,
                      style={'width': '35px', 'height': '25px', 'margin-right': '4px', 'align-self': 'flex-end'},
                      id='arrow_image'),
-    ], style={'flex-direction': 'row', 'margin-top': '16px', 'display': 'flex', 'justify-content': 'space-between'})
+    ], style={'flex-direction': 'row', 'margin-top': '16px', 'display': 'flex', 'justify-content': 'space-between', 'cursor': 'pointer'}, n_clicks=0, id="collapse-button")
 
 def sidebar_header_element_config(icon, status_icon):
     return dbc.Container([

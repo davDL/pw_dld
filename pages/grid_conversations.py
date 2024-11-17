@@ -6,7 +6,7 @@ import dash_bootstrap_components as dbc
 from common_components import text_table_cell, text_table_cell_header, table_text_action_button, text_table_cell_header_mid, text_table_cell_mid
 
 dash.register_page(__name__)
-data = pd.read_csv("assets/dataset_contact_center.csv", sep = ';')
+data = pd.read_csv("assets/lavoratori.csv", sep = ';')
 
 page_size = 50
 

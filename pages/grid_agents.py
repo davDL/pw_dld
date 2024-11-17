@@ -6,8 +6,7 @@ import dash_bootstrap_components as dbc
 from common_components import text_table_cell, text_table_cell_header, image_table_cell_header, image_table_cell, table_action_button
 
 dash.register_page(__name__)
-agents_data = pd.read_csv("assets/dataset_contact_center.csv", sep = ';')
-clean_agents_data = agents_data.drop_duplicates(subset=['user_id'])[agents_data['user_id'].notnull()][agents_data['user_name'].notnull()]
+agents_data = pd.read_csv("assets/lavoratori.csv", sep = ';')
 
 profile_image = dash.get_asset_url('ic_placeholder_profile.png')
 
@@ -73,7 +72,7 @@ def update_list_scores(page):
     filter_index_2 = int_page * page_size
 
     # get data by filter range based on active page number
-    filtered_agents = clean_agents_data[filter_index_1:filter_index_2]
+    filtered_agents = agents_data[filter_index_1:filter_index_2]
 
     # load data to dash bootstrap table component
     table = get_table_agents(filtered_agents, (filter_index_1 + 1))
@@ -84,17 +83,9 @@ def update_list_scores(page):
 content = dbc.Container([
         html.Div([
             html.H5(["Elenco degli agenti"], style={'color': '#365185', 'margin-top':'32px'}),
-            # html.Div([
-            #     dbc.Container([
-            #         html.Img(src=add_icon, style={'width': '15px', 'height': '15px'})
-            #     ], style={'background-color': '#365185', 'width': '30px', 'height': '31px', 'border-top-left-radius': '20px', 'border-bottom-left-radius': '20px', 'display': 'flex','justify-content': 'center', 'align-items': 'center'}),
-            #     dbc.Container([
-            #         "Aggiungi agente"
-            #     ], style={'color': '#ffffff', 'background-color': '#365185', 'height': '31px', 'border-top-right-radius': '20px', 'border-bottom-right-radius': '20px', 'text-align': 'center', 'padding-top': '2px'})
-            # ], style={'background-color': 'white', 'display': 'flex', 'flex-direction': 'row', 'align-self': 'flex-start', 'border-radius': '20px', 'border': '0.3mm solid #dee2e6'})
         ]),
         dbc.Table(id='agents-table-detail', style={'width':'1270px', 'margin':'16px'}),
-        dbc.Pagination(id='agents-pagination-detail', max_value=common_utils.get_total_page(page_size, clean_agents_data.shape[0]), previous_next=True, fully_expanded=False, style={'padding-right':'20px', 'padding-bottom': '20px', 'align-self': 'flex-end'}),
+        dbc.Pagination(id='agents-pagination-detail', max_value=common_utils.get_total_page(page_size, agents_data.shape[0]), previous_next=True, fully_expanded=False, style={'padding-right':'20px', 'padding-bottom': '20px', 'align-self': 'flex-end'}),
     ], style={'display': 'flex', 'flex-direction': 'column'})
 
 layout = html.Div([

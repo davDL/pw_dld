@@ -15,7 +15,7 @@ from common_components import text_table_cell, text_table_cell_header, table_tex
 # Fine alle -> Flow Execution Finished Time
 
 dash.register_page(__name__)
-survey_dataset = pd.read_csv("assets/dataset_survey_italy.csv", sep = ';')
+survey_dataset = pd.read_csv("assets/lavoratori.csv", sep = ';')
 
 page_size = 50
 

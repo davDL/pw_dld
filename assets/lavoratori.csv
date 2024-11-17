@@ -1,0 +1,51 @@
+ID,nome,ruolo,ore_lavoro,id_vigneto,quantita_prodotta
+1,Marco Rossi,viticoltore,150,3,500
+2,Anna Bianchi,enologa,120,7,350
+3,Luca Verdi,imbottigliatore,160,1,400
+4,Sofia Neri,viticoltore,140,5,450
+5,Davide Rossi,enologo,130,2,380
+6,Sara Bianchi,imbottigliatore,155,4,420
+7,Andrea Verdi,viticoltore,145,6,410
+8,Giulia Neri,enologa,125,8,390
+9,Marco Rossi,imbottigliatore,165,9,430
+10,Anna Bianchi,viticoltore,135,10,370
+11, Marco Rossi, viticoltore, 150, 3, 500
+12, Anna Bianchi, enologa, 120, 7, 350
+13, Luca Verdi, imbottigliatore, 160, 1, 400
+14, Sofia Neri, viticoltore, 140, 5, 450
+15, Davide Rossi, enologo, 130, 2, 380
+16, Sara Bianchi, imbottigliatore, 155, 4, 420
+17, Andrea Verdi, viticoltore, 145, 6, 410
+18, Giulia Neri, enologa, 125, 8, 390
+19, Marco Rossi, imbottigliatore, 165, 9, 430
+20, Anna Bianchi, viticoltore, 135, 10, 370
+21, Luca Verdi, enologo, 140, 11, 420
+22, Sofia Neri, imbottigliatore, 150, 12, 390
+23, Davide Rossi, viticoltore, 130, 13, 440
+24, Sara Bianchi, enologa, 125, 14, 380
+25, Andrea Verdi, imbottigliatore, 160, 15, 410
+26, Giulia Neri, viticoltore, 145, 16, 430
+27, Marco Rossi, enologa, 135, 17, 370
+28, Anna Bianchi, imbottigliatore, 155, 18, 420
+29, Luca Verdi, viticoltore, 140, 19, 390
+30, Sofia Neri, enologa, 130, 20, 440
+31, Davide Rossi, imbottigliatore, 160, 21, 410
+32, Sara Bianchi, viticoltore, 145, 22, 430
+33, Andrea Verdi, enologa, 135, 23, 370
+34, Giulia Neri, imbottigliatore, 155, 24, 420
+35, Marco Rossi, viticoltore, 140, 25, 390
+36, Anna Bianchi, enologa, 130, 26, 440
+37, Luca Verdi, imbottigliatore, 160, 27, 410
+38, Sofia Neri, viticoltore, 145, 28, 430
+39, Davide Rossi, enologa, 135, 29, 370
+40, Sara Bianchi, imbottigliatore, 155, 30, 420
+41, Andrea Verdi, viticoltore, 140, 31, 390
+42, Giulia Neri, enologa, 130, 32, 440
+43, Marco Rossi, imbottigliatore, 160, 33, 410
+44, Anna Bianchi, viticoltore, 145, 34, 430
+45, Luca Verdi, enologa, 135, 35, 370
+46, Sofia Neri, imbottigliatore, 155, 36, 420
+47, Davide Rossi, viticoltore, 140, 37, 390
+48, Sara Bianchi, enologa, 130, 38, 440
+49, Andrea Verdi, imbottigliatore, 160, 39, 410
+50, Giulia Neri, viticoltore, 145, 40, 430

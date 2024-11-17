@@ -6,8 +6,7 @@ import dash_bootstrap_components as dbc
 from common_components import text_table_cell, text_table_cell_header, table_action_button
 
 dash.register_page(__name__)
-client_data = pd.read_csv("assets/dataset_conversations.csv", sep = ';')
-clean_client_data = client_data.drop_duplicates(subset=['Contact Id'])
+client_data = pd.read_csv("assets/lavoratori.csv", sep = ';')
 
 page_size = 50
 
@@ -66,7 +65,7 @@ def update_list_scores(page):
     filter_index_2 = int_page * page_size
 
     # get data by filter range based on active page number
-    filtered_clients = clean_client_data[filter_index_1:filter_index_2]
+    filtered_clients = client_data[filter_index_1:filter_index_2]
 
     # load data to dash bootstrap table component
     table = get_table_clients(filtered_clients, (filter_index_1 + 1))
@@ -87,7 +86,7 @@ content = dbc.Container([
             # ], style={'background-color': 'white', 'display': 'flex', 'flex-direction': 'row', 'align-self': 'flex-start', 'border-radius': '20px', 'border': '0.3mm solid #dee2e6'})
         ]),
         dbc.Table(id='clients-table-detail', style={'width':'1270px', 'margin':'16px'}),
-        dbc.Pagination(id='clients-pagination-detail', max_value=common_utils.get_total_page(page_size, clean_client_data.shape[0]), previous_next=True, fully_expanded=False, style={'padding-right':'20px', 'padding-bottom': '20px', 'align-self': 'flex-end'}),
+        dbc.Pagination(id='clients-pagination-detail', max_value=common_utils.get_total_page(page_size, client_data.shape[0]), previous_next=True, fully_expanded=False, style={'padding-right':'20px', 'padding-bottom': '20px', 'align-self': 'flex-end'}),
     ], style={'display': 'flex', 'flex-direction': 'column'})
 
 layout = html.Div([
