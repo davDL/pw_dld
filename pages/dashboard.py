@@ -169,6 +169,7 @@ def get_home():
     #generate_orders()
 
     @callback(
+        Output('system_performances', 'children'),
         Output('varieties_performances', 'children'),
         Output('vineyards_performances', 'children'),
         Output('orders_performances', 'children'),
@@ -186,13 +187,16 @@ def get_home():
         else:
             filtered_production_dataset, filtered_orders_dataset = filter_dataset_by_date_range(start_date, end_date)
 
-        # home_performances_section("Performance del sistema",
-        #                           get_global_performances_cards(
-        #                               production_dataset=filtered_production_dataset,
-        #                               orders_dataset=filtered_orders_dataset
-        #                           )),
-
         return (
+            home_performances_section(
+                "Performance del sistema",
+                get_global_performances_cards(
+                    production_dataset=filtered_production_dataset,
+                    orders_dataset=filtered_orders_dataset,
+                    workers_dataset=workers_dataset,
+                    machinery_dataset=machinery_dataset
+                )
+            ),
             home_section("Varietá e produzione",
                          table_performances_variety(
                              order_icon,
@@ -252,7 +256,6 @@ def get_home():
                 )
             ),
         ], id='system_performances'),
-
         dbc.Container([
             home_section("Varietá e produzione",
                          table_performances_variety(
@@ -262,7 +265,6 @@ def get_home():
                          )
             )
         ], id= 'varieties_performances'),
-
         dbc.Container([
             home_section("Vigneti e produzione",
                          table_performances_vineyards(
@@ -272,7 +274,6 @@ def get_home():
                          )
             )
         ], id= 'vineyards_performances'),
-
         dbc.Container([
             home_section("Vendite e ordini",
                          table_performances_sell_orders(
@@ -281,7 +282,6 @@ def get_home():
                          )
             )
         ], id= 'orders_performances'),
-
         # tabelle agenti clienti affiancate
         dbc.Container([
             home_section("Macchine", table_in_row_machinery(
@@ -291,22 +291,18 @@ def get_home():
                 workers_dataset=workers_dataset
             )),
         ], className='inRowTables'),
-
         home_section("Vigneti",
                      table_in_row_vineyards(
                          vineyards_dataset=vineyards_dataset
                      )),
-
         home_section("Produzioni",
                      table_in_row_production(
                          production_dataset=production_dataset
                      )),
-
         home_section("Ordini",
                      table_in_row_orders(
                          orders_dataset=orders_dataset
                      )),
-
     ], className='side')
 
 layout = get_home()

@@ -1,6 +1,6 @@
 from dash import html, Output, Input, callback
 import dash_bootstrap_components as dbc
-from common_components import text_table_cell, text_table_cell_header, progress_table_cell, image_table_cell
+from common_components import text_table_cell, text_table_cell_header
 
 def generate_performance_variety_values_by_row(row, production_dataset) :
     # ---filtrare le righe per varietá : renderlo filtrabile in base al campo data (convertire da millisecond epoch a datetime)
