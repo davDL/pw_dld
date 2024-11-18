@@ -11,6 +11,7 @@ from dashboard_sections.registry_table_components import table_in_row_machinery,
 from dashboard_sections.performance_table_components import table_performances_vineyards, table_performances_variety, table_performances_sell_orders
 from common_components import home_performances_section, elevated_bar, home_section
 from dashboard_sections.global_performances_components import get_global_performances_cards
+import plotly.graph_objects as go
 
 dash.register_page(__name__, path='/')
 
@@ -19,12 +20,20 @@ machinery_dataset = pd.read_csv("assets/macchinari.csv", sep=',')
 vineyards_dataset = pd.read_csv("assets/vigneti.csv", sep=',')
 production_dataset = pd.read_csv("assets/produzione.csv", sep=',')
 orders_dataset = pd.read_csv("assets/ordini.csv", sep=',')
+weather_conditions_dataset = pd.read_csv("assets/weather_conditions.csv", sep=',')
 
 reset_filters_icon = dash.get_asset_url('ic_reset_filters.png')
 order_icon = dash.get_asset_url('ic_arrow_down_black.png')
 
 global_variables = {}
 global_variables['clicked_times'] = 0
+
+def plot_data(df, y_columns, title):
+    fig = go.Figure()
+    for col in y_columns:
+        fig.add_trace(go.Scatter(x=df.index, y=df[col], name=col))
+    fig.update_layout(title=title, xaxis_title='Tempo')
+    return fig
 
 def generate_production_rows():
     # Funzione per generare un timestamp casuale all'interno di un anno
@@ -146,6 +155,45 @@ def generate_orders():
     # Salvataggio del DataFrame come CSV
     df.to_csv(percorso_completo, index=False)
 
+def generate_weather_conditions_2023(num_mesi=12, seed=42):
+  """
+  Genera un DataFrame con dati meteo simulati per un vigneto.
+
+  Args:
+    num_mesi: Numero di mesi da generare.
+    seed: Seed per la generazione dei numeri casuali.
+
+  Returns:
+    Un DataFrame Pandas con i dati meteo simulati.
+  """
+
+  path_progetto = "C:\\Users\\dld\\PycharmProjects\\project_work_dld"
+  nome_file = "weather_conditions.csv"
+  percorso_completo = os.path.join(path_progetto, "assets", nome_file)
+
+  np.random.seed(seed)
+
+  # Creazione dell'indice delle date
+  date_range = pd.date_range(start='2023-01-01', periods=num_mesi, freq='M')
+
+  # Generazione di dati casuali con variazioni stagionali
+  temp_min = np.random.randint(0, 15, num_mesi) + np.sin(np.arange(num_mesi) / 12 * 2 * np.pi) * 5
+  temp_max = temp_min + np.random.randint(10, 20, num_mesi)
+  umidita_min = np.random.randint(40, 80, num_mesi)
+  umidita_max = umidita_min + np.random.randint(10, 20, num_mesi)
+  precipitazioni = np.random.randint(0, 100, num_mesi) + np.sin(np.arange(num_mesi) / 12 * 2 * np.pi) * 30
+
+  # Creazione del DataFrame
+  data = {'data': date_range,
+          'temp_min': temp_min,
+          'temp_max': temp_max,
+          'umidita_min': umidita_min,
+          'umidita_max': umidita_max,
+          'precipitazioni': precipitazioni}
+  df = pd.DataFrame(data)
+
+  df.to_csv(percorso_completo, index=False)
+
 def filter_dataset_by_date_range(start_date, end_date):
     if start_date is not None and end_date is not None:
         timestamp_start_date = pd.to_datetime(start_date, format='%Y-%m-%d')
@@ -164,9 +212,15 @@ def filter_dataset_by_date_range(start_date, end_date):
 
     return production_dataset, orders_dataset
 
+# # Chiama la funzione per creare i grafici
+# plot_data(weather_conditions_dataset, ['temp_min', 'temp_max'], 'Andamento delle temperature nel tempo')
+# plot_data(weather_conditions_dataset, ['umidita_min', 'umidita_max'], 'Andamento dell\'umidità nel tempo')
+# plot_data(weather_conditions_dataset, ['precipitazioni'], 'Andamento delle precipitazioni nel tempo')
+
 def get_home():
     #generate_production_rows()
     #generate_orders()
+    #generate_weather_conditions_2023()
 
     @callback(
         Output('system_performances', 'children'),
@@ -256,6 +310,21 @@ def get_home():
                 )
             ),
         ], id='system_performances'),
+        dbc.Container([
+            home_section("Andamento delle temperature nel tempo",
+                         dcc.Graph(id='temp-graph', figure=plot_data(weather_conditions_dataset, ['temp_min', 'temp_max'],'')),
+            )
+        ]),
+        dbc.Container([
+            home_section("Andamento dell\'umidità nel tempo",
+                         dcc.Graph(id='umidita-graph', figure=plot_data(weather_conditions_dataset, ['umidita_min', 'umidita_max'],''))
+            )
+        ]),
+        dbc.Container([
+            home_section("Andamento delle precipitazioni nel tempo",
+                         dcc.Graph(id='temp-min-graph', figure=plot_data(weather_conditions_dataset, ['precipitazioni'],''))
+            )
+        ]),
         dbc.Container([
             home_section("Varietá e produzione",
                          table_performances_variety(
