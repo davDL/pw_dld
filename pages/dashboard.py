@@ -12,6 +12,7 @@ from dashboard_sections.performance_table_components import table_performances_v
 from common_components import home_performances_section, elevated_bar, home_section
 from dashboard_sections.global_performances_components import get_global_performances_cards
 import plotly.graph_objects as go
+from meteostat import Point, Daily
 
 dash.register_page(__name__, path='/')
 
@@ -28,22 +29,183 @@ order_icon = dash.get_asset_url('ic_arrow_down_black.png')
 global_variables = {}
 global_variables['clicked_times'] = 0
 
-def plot_data(df, y_columns, title):
+def plot_data(df, y_columns):
     fig = go.Figure()
     for col in y_columns:
         fig.add_trace(go.Scatter(x=df.index, y=df[col], name=col))
-    fig.update_layout(title=title, xaxis_title='Tempo')
+    fig.update_layout(xaxis_title='Tempo')
     return fig
 
-def generate_production_rows():
-    # Funzione per generare un timestamp casuale all'interno di un anno
-    def genera_timestamp():
-        anno = random.randint(2023, 2024)
-        inizio_anno = int(pd.Timestamp(f"{anno}-01-01").timestamp() * 1000)
-        fine_anno = int(pd.Timestamp(f"{anno}-12-31").timestamp() * 1000)
-        return random.randint(inizio_anno, fine_anno)
+def get_season_dates(year, season_item):
+    # Definisci i mesi di inizio e fine per ogni stagione
+    seasons = [(12, 3), (3, 6), (6, 9), (9, 12)]
+    start_month, end_month = seasons[season_item - 1]
 
-    path_progetto = "C:\\Users\\dld\\PycharmProjects\\project_work_dld"  # Sostituisci con il percorso esatto
+    start_date_time = pd.to_datetime(f"{year}-{start_month}-01")
+    end_date_time = pd.to_datetime(f"{year}-{end_month}-31")
+
+    return start_date_time, end_date_time
+
+def get_weather_dataset_by_date(start_date):
+    location = Point(lat=41.9028, lon=12.4964)  # Roma, Italia (esempio)
+    param_start = pd.Timestamp(f"{start_date.year}-01-01")
+    param_end = pd.Timestamp(f"{start_date.year}-12-31")
+
+    data = Daily(location, param_start, param_end)
+    data = data.fetch()
+
+    # Crea il DataFrame con le colonne desiderate
+    df = data[['tavg', 'tmin', 'tmax', 'prcp']]
+    df.columns = ['temperatura_media', 'temperatura_minima', 'temperatura_massima', 'precipitazioni']
+
+    return df
+
+def generate_production_quantity_by_weather(quantita_prevista, start_date_millis):
+    # Soglia per il numero totale di occorrenze
+    soglia_occorrenze = 10
+    reason_autunno = "produzione ottimale"
+    reason_estate = "produzione ottimale"
+    reason_primavera = "produzione ottimale"
+
+    # Assumiamo che start_date_millis sia la tua data di inizio in millisecondi
+    start_date = pd.to_datetime(start_date_millis, unit='ms')
+
+    location = Point(lat=41.9028, lon=12.4964)  # Roma, Italia (esempio)
+    param_start = pd.Timestamp(f"{start_date.year}-01-01")
+    param_end = pd.Timestamp(f"{start_date.year}-12-31")
+
+    data = Daily(location, param_start, param_end)
+    data = data.fetch()
+
+    # Crea il DataFrame con le colonne desiderate
+    df = data[['tavg', 'tmin', 'tmax', 'prcp']]
+    df.columns = ['temperatura_media', 'temperatura_minima', 'temperatura_massima', 'precipitazioni']
+
+    df_weather_by_date = get_weather_dataset_by_date(start_date)
+
+    df_primavera = None
+    df_estate = None
+    df_autunno = None
+
+    for season in range(1, 5):
+        start, end = get_season_dates(start_date.year, season)
+        if season == 2:
+            df_primavera = df_weather_by_date[(df_weather_by_date.index >= start) & (df_weather_by_date.index <= end)]
+        elif season == 3:
+            df_estate = df_weather_by_date[(df_weather_by_date.index >= start) & (df_weather_by_date.index <= end)]
+        else:
+            df_autunno = df_weather_by_date[(df_weather_by_date.index >= start) & (df_weather_by_date.index <= end)]
+
+    # Conteggio delle occorrenze temperatura
+    conteggio_primavera_temp = len(df_primavera[(df_primavera['temperatura_minima'] < 10) & (df_primavera['temperatura_massima'] > 15)])
+    conteggio_estate_temp = len(df_estate[(df_estate['temperatura_minima'] < 25) & (df_estate['temperatura_massima'] > 35)])
+    conteggio_autunno_temp = len(df_autunno[(df_autunno['temperatura_minima'] < 15) & (df_autunno['temperatura_massima'] > 25)])
+
+    # Conteggio delle occorrenze precipitazioni
+    conteggio_primavera_prcp = len(df_primavera[(df_primavera['prcp'] < 2) | (df_primavera['prcp'] > 4)])
+    conteggio_estate_prcp = len(df_estate[(df_estate['prcp'] < 2) | (df_estate['prcp'] > 4)])
+    conteggio_autunno_prcp = len(df_autunno[(df_autunno['prcp'] < 2) | (df_autunno['prcp'] > 4)])
+
+    # Riduciamo la quantità del 10% per le stagioni che superano la soglia
+    if conteggio_primavera_temp + conteggio_primavera_prcp > soglia_occorrenze:
+        reason_primavera = "probabili danni germogli"
+        quantita_prevista *= 0.9
+
+    if conteggio_estate_temp + conteggio_estate_prcp > soglia_occorrenze:
+        reason_estate = "probabile quantitá zuccheri negli acini compromessa"
+        quantita_prevista *= 0.9
+
+    if conteggio_autunno_temp + conteggio_autunno_prcp > soglia_occorrenze:
+        reason_autunno = "probabile equilibrio zuccheri-aciditá compromesso"
+        quantita_prevista *= 0.9
+
+    return quantita_prevista, reason_primavera, reason_estate, reason_autunno
+
+def generate_reason_primavera(start_date_millis):
+    soglia_occorrenze = 10
+    reason_primavera = "produzione ottimale"
+
+    # Assumiamo che start_date_millis sia la tua data di inizio in millisecondi
+    start_date = pd.to_datetime(start_date_millis, unit='ms')
+
+    df_weather_by_date = get_weather_dataset_by_date(start_date)
+
+    df_primavera = None
+
+    for season in range(1, 5):
+        start, end = get_season_dates(start_date.year, season)
+        if season == 2:
+            df_primavera = df_weather_by_date[(df_weather_by_date.index >= start) & (df_weather_by_date.index <= end)]
+
+    # Conteggio delle occorrenze temperatura
+    conteggio_primavera_temp = len(
+        df_primavera[(df_primavera['temperatura_minima'] < 10) & (df_primavera['temperatura_massima'] > 15)])
+
+    # Conteggio delle occorrenze precipitazioni
+    conteggio_primavera_prcp = len(df_primavera[(df_primavera['prcp'] < 2) | (df_primavera['prcp'] > 4)])
+
+    # Riduciamo la quantità del 10% per le stagioni che superano la soglia
+    if conteggio_primavera_temp + conteggio_primavera_prcp > soglia_occorrenze:
+        reason_primavera = "probabili danni germogli"
+
+    return reason_primavera
+
+def generate_reason_estate(start_date_millis):
+    soglia_occorrenze = 10
+    reason_estate = "produzione ottimale"
+
+    # Assumiamo che start_date_millis sia la tua data di inizio in millisecondi
+    start_date = pd.to_datetime(start_date_millis, unit='ms')
+
+    df_weather_by_date = get_weather_dataset_by_date(start_date)
+
+    df_estate = None
+
+    for season in range(1, 5):
+        start, end = get_season_dates(start_date.year, season)
+        if season == 3:
+            df_estate = df_weather_by_date[(df_weather_by_date.index >= start) & (df_weather_by_date.index <= end)]
+
+    conteggio_estate_temp = len(
+        df_estate[(df_estate['temperatura_minima'] < 25) & (df_estate['temperatura_massima'] > 35)])
+
+    # Conteggio delle occorrenze precipitazioni
+    conteggio_estate_prcp = len(df_estate[(df_estate['prcp'] < 2) | (df_estate['prcp'] > 4)])
+
+    if conteggio_estate_temp + conteggio_estate_prcp > soglia_occorrenze:
+        reason_estate = "probabile quantitá zuccheri negli acini compromessa"
+
+
+    return reason_estate
+
+def generate_reason_autunno(start_date_millis):
+    soglia_occorrenze = 10
+    reason_autunno = "produzione ottimale"
+
+    # Assumiamo che start_date_millis sia la tua data di inizio in millisecondi
+    start_date = pd.to_datetime(start_date_millis, unit='ms')
+
+    df_weather_by_date = get_weather_dataset_by_date(start_date)
+
+    df_autunno = None
+
+    for season in range(1, 5):
+        start, end = get_season_dates(start_date.year, season)
+        if season == 3:
+            df_autunno = df_weather_by_date[(df_weather_by_date.index >= start) & (df_weather_by_date.index <= end)]
+
+    conteggio_autunno_temp = len(
+        df_autunno[(df_autunno['temperatura_minima'] < 15) & (df_autunno['temperatura_massima'] > 25)])
+
+    conteggio_autunno_prcp = len(df_autunno[(df_autunno['prcp'] < 2) | (df_autunno['prcp'] > 4)])
+
+    if conteggio_autunno_temp + conteggio_autunno_prcp > soglia_occorrenze:
+        reason_autunno = "probabile equilibrio zuccheri-aciditá compromesso"
+
+    return reason_autunno
+
+def generate_production_rows():
+    path_progetto = "C:\\Users\\dld\\PycharmProjects\\project_work_dld"
     nome_file = "produzione.csv"
     percorso_completo = os.path.join(path_progetto, "assets", nome_file)
 
@@ -62,26 +224,30 @@ def generate_production_rows():
         "Cabernet Sauvignon": (9, 11)
     }
 
+    def get_production_start_month (variety, all_variety):
+        anno = random.randint(2023, 2024)
+        mese_inizio, mese_fine = all_variety[variety]
+        inizio = int(pd.Timestamp(f"{anno}-{mese_inizio}-01").timestamp() * 1000)
+        fine = int(pd.Timestamp(f"{anno}-{mese_inizio}-31").timestamp() * 1000)
+        return random.randint(inizio, fine)
+
+    def get_production_end_month (variety, all_variety):
+        anno = random.randint(2023, 2024)
+        mese_inizio, mese_fine = all_variety[variety]
+        inizio = int(pd.Timestamp(f"{anno}-{mese_fine}-01").timestamp() * 1000)
+        fine = int(pd.Timestamp(f"{anno}-{mese_fine}-31").timestamp() * 1000)
+        return random.randint(inizio, fine)
+
     # Creazione del DataFrame
     df = pd.DataFrame({
         'ID': range(1, 1001),
-        'data': [genera_timestamp() for _ in range(1000)],
         'id_vigneto': np.random.randint(1, 11, size=1000),
-        'varieta': np.random.choice(varieta, size=1000)
+        'varieta': np.random.choice(varieta, size=1000),
     })
 
-    # Funzione per verificare se la data di raccolta è coerente con la varietà
-    def check_periodo_raccolta(row):
-        if row['data'] is not None:
-            mese = pd.to_datetime(row['data'], unit='ms').month
-        else:
-            # Gestisci il caso in cui row['data'] è None (es. assegna un valore di default, salta il record, ecc.)
-            mese = None  # O un altro valore appropriato
-
-        return mese in periodi_raccolta[row['varieta']]
-
-    # Filtraggio dei dati in base al periodo di raccolta
-    df = df[df.apply(check_periodo_raccolta, axis=1)]
+    # Applicazione delle funzioni a ogni riga
+    df['data_inizio'] = df.apply(lambda row: get_production_start_month(row['varieta'], periodi_raccolta), axis=1)
+    df['data_fine'] = df.apply(lambda row: get_production_end_month(row['varieta'], periodi_raccolta), axis=1)
 
     # Funzione per generare costi di produzione più realistici (con variazioni in base alla varietà)
     def genera_costo_produzione(varieta_vino, quantita):
@@ -104,12 +270,16 @@ def generate_production_rows():
             "Pinot Bianco": 1.6,  # Varietà spesso utilizzata per vini base e spumanti
         }
         costo_base = costi_base.get(varieta_vino, 2)  # Valore di default se la varietà non è presente
-        # Variazioni casuali sul costo base
+
         return round(costo_base * quantita * (1 + np.random.normal(0, 0.1)), 2)
 
-    df['quantita_prodotta'] = np.random.randint(500, 2000, size=len(df))
+    df['quantita_prodotta_prevista'] = np.random.randint(500, 2000, size=len(df))
+    df['quantia_prodotta_effettiva'] = df.apply(lambda row: generate_production_quantity_by_weather(row['quantita_prodotta_prevista'], row['data_inizio'], ), axis=1)
+    df['reason_primavera'] = df.apply(lambda row: generate_reason_primavera(row['data_inizio'], ), axis=1)
+    df['reason_estate'] = df.apply(lambda row: generate_reason_estate(row['data_inizio'], ), axis=1)
+    df['reason_autunno'] = df.apply(lambda row: generate_reason_autunno(row['data_inizio'], ), axis=1)
     df['qualita'] = np.random.randint(70, 100, size=len(df))
-    df['costo_totale_produzione'] = df.apply(lambda row: genera_costo_produzione(row['varieta'], row['quantita_prodotta']), axis=1)
+    df['costo_totale_produzione'] = df.apply(lambda row: genera_costo_produzione(row['varieta'], row['quantita_prodotta'], ), axis=1)
     df['consumi_acqua'] = np.random.randint(1000, 5000, size=len(df))  # Adattare l'intervallo in base ai tuoi dati
     df['consumi_energia'] = np.random.randint(500, 2000, size=len(df))  # Adattare l'intervallo in base ai tuoi dati
     df['litri_vino'] = df['quantita_prodotta'] * 0.75  # Assumendo una resa media di 0.75 litri per kg
@@ -155,44 +325,21 @@ def generate_orders():
     # Salvataggio del DataFrame come CSV
     df.to_csv(percorso_completo, index=False)
 
-def generate_weather_conditions_2023(num_mesi=12, seed=42):
-  """
-  Genera un DataFrame con dati meteo simulati per un vigneto.
+def generate_weather_conditions_by_range(start_date, end_date):
+    # Definisci la località e il periodo
+    location = Point(lat=41.9028, lon=12.4964)  # Roma, Italia (esempio)
+    start = pd.Timestamp('2023-01-01')
+    end = pd.Timestamp('2024-12-31')
 
-  Args:
-    num_mesi: Numero di mesi da generare.
-    seed: Seed per la generazione dei numeri casuali.
+    # Recupera i dati
+    data = Daily(location, start, end)
+    data = data.fetch()
 
-  Returns:
-    Un DataFrame Pandas con i dati meteo simulati.
-  """
+    # Crea il DataFrame con le colonne desiderate
+    df = data[['tavg', 'tmin', 'tmax', 'prcp']]
+    df.columns = ['temperatura_media', 'temperatura_minima', 'temperatura_massima', 'precipitazioni']
 
-  path_progetto = "C:\\Users\\dld\\PycharmProjects\\project_work_dld"
-  nome_file = "weather_conditions.csv"
-  percorso_completo = os.path.join(path_progetto, "assets", nome_file)
-
-  np.random.seed(seed)
-
-  # Creazione dell'indice delle date
-  date_range = pd.date_range(start='2023-01-01', periods=num_mesi, freq='M')
-
-  # Generazione di dati casuali con variazioni stagionali
-  temp_min = np.random.randint(0, 15, num_mesi) + np.sin(np.arange(num_mesi) / 12 * 2 * np.pi) * 5
-  temp_max = temp_min + np.random.randint(10, 20, num_mesi)
-  umidita_min = np.random.randint(40, 80, num_mesi)
-  umidita_max = umidita_min + np.random.randint(10, 20, num_mesi)
-  precipitazioni = np.random.randint(0, 100, num_mesi) + np.sin(np.arange(num_mesi) / 12 * 2 * np.pi) * 30
-
-  # Creazione del DataFrame
-  data = {'data': date_range,
-          'temp_min': temp_min,
-          'temp_max': temp_max,
-          'umidita_min': umidita_min,
-          'umidita_max': umidita_max,
-          'precipitazioni': precipitazioni}
-  df = pd.DataFrame(data)
-
-  df.to_csv(percorso_completo, index=False)
+    return df
 
 def filter_dataset_by_date_range(start_date, end_date):
     if start_date is not None and end_date is not None:
@@ -212,15 +359,10 @@ def filter_dataset_by_date_range(start_date, end_date):
 
     return production_dataset, orders_dataset
 
-# # Chiama la funzione per creare i grafici
-# plot_data(weather_conditions_dataset, ['temp_min', 'temp_max'], 'Andamento delle temperature nel tempo')
-# plot_data(weather_conditions_dataset, ['umidita_min', 'umidita_max'], 'Andamento dell\'umidità nel tempo')
-# plot_data(weather_conditions_dataset, ['precipitazioni'], 'Andamento delle precipitazioni nel tempo')
-
 def get_home():
-    #generate_production_rows()
+    generate_production_rows()
     #generate_orders()
-    #generate_weather_conditions_2023()
+    #generate_weather_conditions_2023_2024()
 
     @callback(
         Output('system_performances', 'children'),
@@ -312,17 +454,12 @@ def get_home():
         ], id='system_performances'),
         dbc.Container([
             home_section("Andamento delle temperature nel tempo",
-                         dcc.Graph(id='temp-graph', figure=plot_data(weather_conditions_dataset, ['temp_min', 'temp_max'],'')),
-            )
-        ]),
-        dbc.Container([
-            home_section("Andamento dell\'umidità nel tempo",
-                         dcc.Graph(id='umidita-graph', figure=plot_data(weather_conditions_dataset, ['umidita_min', 'umidita_max'],''))
+                         dcc.Graph(id='temp-graph', figure=plot_data(weather_conditions_dataset, ['temp_min', 'temp_max'])),
             )
         ]),
         dbc.Container([
             home_section("Andamento delle precipitazioni nel tempo",
-                         dcc.Graph(id='temp-min-graph', figure=plot_data(weather_conditions_dataset, ['precipitazioni'],''))
+                         dcc.Graph(id='temp-min-graph', figure=plot_data(weather_conditions_dataset, ['precipitazioni']))
             )
         ]),
         dbc.Container([
