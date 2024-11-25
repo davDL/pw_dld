@@ -208,19 +208,18 @@ def get_table_in_row_vineyards(dataset, counter):
 def production_table_row(row):
     return html.Tr([
         text_table_cell(row.get("ID")),
-        text_table_cell_mid(pd.to_datetime(row.get('data'), unit='ms').strftime('%d/%m/%Y')),
+        text_table_cell_mid(pd.to_datetime(row.get('data_inizio'), unit='ms').strftime('%d/%m/%Y')),
+        text_table_cell_mid(pd.to_datetime(row.get('data_fine'), unit='ms').strftime('%d/%m/%Y')),
         text_table_cell(row.get("id_vigneto")),
         text_table_cell(row.get("varieta")),
-        text_table_cell(row.get("quantita_prodotta")),
+        text_table_cell(round(float(row.get("quantita_prodotta_prevista")), 2)),
+        text_table_cell(round(float(row.get("quantia_prodotta_effettiva")), 2)),
         text_table_cell(row.get("qualita")),
-        text_table_cell(row.get("costo_totale_produzione")),
-        text_table_cell(row.get("consumi_acqua")),
-        text_table_cell(row.get("consumi_energia")),
-        text_table_cell(row.get("litri_vino")),
-        text_table_cell(row.get("bottiglie_prodotte")),
-        text_table_cell(row.get("umidita_media")),
-        text_table_cell(row.get("temperatura_media")),
-        text_table_cell(row.get("precipitazioni_medie"))
+        text_table_cell(round(float(row.get("costo_totale_produzione")), 2)),
+        text_table_cell(round(float(row.get("consumi_acqua")), 2)),
+        text_table_cell(round(float(row.get("consumi_energia")), 2)),
+        text_table_cell(round(float(row.get("litri_vino")), 2)),
+        text_table_cell(round(float(row.get("bottiglie_prodotte")), 2))
     ], style={'height': '51px', 'width': '50px'})
 
 def table_in_row_production(production_dataset):
@@ -263,19 +262,18 @@ def get_table_in_row_production(dataset, counter):
         html.Thead(
             html.Tr([
                 text_table_cell_header("Id"),
-                text_table_cell_header("Data"),
+                text_table_cell_header("Data inizio"),
+                text_table_cell_header("Data fine"),
                 text_table_cell_header("Id vigneto"),
                 text_table_cell_header("Varietá"),
-                text_table_cell_header("Quantitá prodotta"),
+                text_table_cell_header("Quantitá prevista"),
+                text_table_cell_header("Quantitá effettiva"),
                 text_table_cell_header("Qualitá"),
                 text_table_cell_header("Costo totale produzione"),
                 text_table_cell_header("Consumi acqua"),
                 text_table_cell_header("Consumi energia"),
-                text_table_cell_header("Quantitá uva"),
-                text_table_cell_header("Bottiglie prodotte"),
-                text_table_cell_header("Umiditá"),
-                text_table_cell_header("Temperatura"),
-                text_table_cell_header("Precipitazioni")
+                text_table_cell_header("Vino"),
+                text_table_cell_header("Bottiglie prodotte")
             ], style={'height': '51px', 'width': '50px'})
         )
     ]
@@ -283,6 +281,78 @@ def get_table_in_row_production(dataset, counter):
     table_rows = []
     for index, row in dataset.iterrows():
         table_rows.append(production_table_row(row))
+        counter += 1
+
+    table_body = [html.Tbody(table_rows)]
+    table = dbc.Table(table_header + table_body, striped=True, bordered=True, hover=True)
+
+    return table
+
+
+def production_yield_table_row(row):
+    return html.Tr([
+        text_table_cell(row.get("ID")),
+        text_table_cell(row.get("id_vigneto")),
+        text_table_cell(row.get("varieta")),
+        text_table_cell(row.get("quantita_prodotta_prevista")),
+        text_table_cell(round(float(row.get("quantia_prodotta_effettiva")),2)),
+        text_table_cell(row.get("reason_primavera")),
+        text_table_cell(row.get("reason_estate")),
+        text_table_cell(row.get("reason_autunno"))
+    ], style={'height': '51px', 'width': '50px'})
+
+def table_in_row_production_yield(production_dataset):
+    page_size = 5
+
+    # create callback
+    @callback(
+        Output('production-table-yield', 'children'),
+        Input('production-pagination-yield', 'active_page'),
+    )
+    def update_list_production(page):
+        # convert active_page data to integer and set default value to 1
+        int_page = 1 if not page else int(page)
+
+        # define filter index range based on active page
+        filter_index_1 = (int_page - 1) * page_size
+        filter_index_2 = int_page * page_size
+
+        # get data by filter range based on active page number
+        filter_dataset = production_dataset[filter_index_1:filter_index_2]
+
+        # load data to dash bootstrap table component
+        table = get_table_in_row_production_yield(filter_dataset, (filter_index_1 + 1))
+
+        return table
+
+    return dbc.Container([
+        html.Div([
+            html.H5(["Elenco della produzione - resa vigneto"], style={'color': '#365185'}),
+        ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between',
+                  'margin-bottom': '8px'}),
+        dbc.Table(id='production-table-yield', style={'min-height': '350px'}),
+        dbc.Pagination(id='production-pagination-yield', max_value=common_utils.get_total_page(page_size, production_dataset.shape[0]), previous_next=True, fully_expanded=False, style={'padding-bottom': '20px', 'align-self': 'flex-end'}),
+    ], style={'display': 'flex', 'flex-direction': 'column'})
+
+def get_table_in_row_production_yield(dataset, counter):
+    table_header = [
+        html.Thead(
+            html.Tr([
+                text_table_cell_header("Id"),
+                text_table_cell_header("Id vigneto"),
+                text_table_cell_header("Varietá"),
+                text_table_cell_header("Quantitá prevista"),
+                text_table_cell_header("Quantitá effettiva"),
+                text_table_cell_header("Primavera"),
+                text_table_cell_header("Estate"),
+                text_table_cell_header("Autunno")
+            ], style={'height': '51px', 'width': '50px'})
+        )
+    ]
+
+    table_rows = []
+    for index, row in dataset.iterrows():
+        table_rows.append(production_yield_table_row(row))
         counter += 1
 
     table_body = [html.Tbody(table_rows)]

@@ -8,7 +8,7 @@ def get_global_performances_cards(production_dataset, orders_dataset, workers_da
 
     # Produzione media:
     # Formula: (Sommatoria della quantità prodotta) / (Numero di produzioni)
-    avg_production = production_dataset['quantita_prodotta'].sum() // production_dataset_count
+    avg_production = production_dataset['quantia_prodotta_effettiva'].sum() // production_dataset_count
 
     # Valore medio del carrello:
     # Formula: (Valore totale degli ordini) / (Numero di ordini)
@@ -34,11 +34,11 @@ def get_global_performances_cards(production_dataset, orders_dataset, workers_da
 
     # Intensità energetica:
     # Formula: Energia_consumata / Quantità_prodotta
-    energy_consumption = production_dataset['consumi_energia'].sum() // production_dataset['quantita_prodotta'].sum()
+    energy_consumption = production_dataset['consumi_energia'].sum() // production_dataset['quantia_prodotta_effettiva'].sum()
 
     # Intensità idrica:
     # Formula: Acqua_consumata / Quantità_prodotta
-    water_consumption = production_dataset['consumi_acqua'].sum() // production_dataset['quantita_prodotta'].sum()
+    water_consumption = production_dataset['consumi_acqua'].sum() // production_dataset['quantia_prodotta_effettiva'].sum()
 
 
     return dbc.Container([

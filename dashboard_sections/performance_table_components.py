@@ -12,13 +12,13 @@ def generate_performance_variety_values_by_row(row, production_dataset) :
         return
 
     # quantitá media per varietá
-    avg_quantity = filtered_production['quantita_prodotta'].sum() // filtered_production_count
+    avg_quantity = filtered_production['quantia_prodotta_effettiva'].sum() // filtered_production_count
     # qualitá media per varietá
     avg_quality = filtered_production['qualita'].sum() // filtered_production_count
     # costo medio per varietá
     avg_price = filtered_production['costo_totale_produzione'].sum() // filtered_production_count
     # resa vino
-    wine_yield = (filtered_production['quantita_prodotta'].sum() // filtered_production_count) / (filtered_production['litri_vino'].sum() // filtered_production_count)  # (kg per litro)
+    wine_yield = round((filtered_production['quantia_prodotta_effettiva'].sum() // filtered_production_count) / (filtered_production['litri_vino'].sum() // filtered_production_count), 5)  # (kg per litro)
 
     return (row.get("nome_varieta_coltivata"),
             int(avg_quantity),
@@ -47,13 +47,13 @@ def performances_variety_table_row (row, production_dataset):
         return
 
     # quantitá media per varietá
-    avg_quantity = filtered_production['quantita_prodotta'].sum() // filtered_production_count
+    avg_quantity = filtered_production['quantia_prodotta_effettiva'].sum() // filtered_production_count
     # qualitá media per varietá
     avg_quality = filtered_production['qualita'].sum() // filtered_production_count
     # costo medio per varietá
     avg_price = filtered_production['costo_totale_produzione'].sum() // filtered_production_count
     # resa vino
-    wine_yield = (filtered_production['quantita_prodotta'].sum() // filtered_production_count) / (filtered_production['litri_vino'].sum() // filtered_production_count) #(kg per litro)
+    wine_yield = round((filtered_production['quantia_prodotta_effettiva'].sum() // filtered_production_count) / (filtered_production['litri_vino'].sum() // filtered_production_count), 5) #(kg per litro)
 
     return  html.Tr([
         text_table_cell(row.get("nome_varieta_coltivata")),
@@ -184,13 +184,13 @@ def generate_performance_vineyards_values_by_row(row, production_dataset) :
         return
 
     # quantitá media per varietá
-    avg_quantity = filtered_production['quantita_prodotta'].sum() // filtered_production_count
+    avg_quantity = filtered_production['quantia_prodotta_effettiva'].sum() // filtered_production_count
     # qualitá media per varietá
     avg_quality = filtered_production['qualita'].sum() // filtered_production_count
     # costo medio per varietá
     avg_price = filtered_production['costo_totale_produzione'].sum() // filtered_production_count
     # resa vino
-    wine_yield = (filtered_production['quantita_prodotta'].sum() // filtered_production_count) / (filtered_production['litri_vino'].sum() // filtered_production_count)  # (kg per litro)
+    wine_yield = round((filtered_production['quantia_prodotta_effettiva'].sum() // filtered_production_count) / (filtered_production['litri_vino'].sum() // filtered_production_count), 5)  # (kg per litro)
 
     return (row.get("ID"),
             int(avg_quantity),
@@ -219,13 +219,13 @@ def performances_vineyards_table_row (row, production_dataset):
         return
 
     # quantitá media per varietá
-    avg_quantity = filtered_production['quantita_prodotta'].sum() // filtered_production_count
+    avg_quantity = filtered_production['quantia_prodotta_effettiva'].sum() // filtered_production_count
     # qualitá media per varietá
     avg_quality = filtered_production['qualita'].sum() // filtered_production_count
     # costo medio per varietá
     avg_price = filtered_production['costo_totale_produzione'].sum() // filtered_production_count
     # resa vino
-    wine_yield = (filtered_production['quantita_prodotta'].sum() // filtered_production_count) / (filtered_production['litri_vino'].sum() // filtered_production_count) #(kg per litro)
+    wine_yield = round((filtered_production['quantia_prodotta_effettiva'].sum() // filtered_production_count) / (filtered_production['litri_vino'].sum() // filtered_production_count), 5) #(kg per litro)
 
     return  html.Tr([
         text_table_cell(row.get("ID")),
