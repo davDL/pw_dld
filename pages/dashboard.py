@@ -14,7 +14,6 @@ from common_components import home_performances_section, elevated_bar, home_sect
 from dashboard_sections.global_performances_components import get_global_performances_cards
 import plotly.graph_objects as go
 from meteostat import Point, Daily
-import plotly.express as px
 
 dash.register_page(__name__, path='/')
 
@@ -347,22 +346,6 @@ def generate_orders():
 
     # Salvataggio del DataFrame come CSV
     df.to_csv(percorso_completo, index=False)
-
-def generate_weather_conditions_by_range(start_date, end_date):
-    # Definisci la località e il periodo
-    location = Point(lat=41.9028, lon=12.4964)  # Roma, Italia (esempio)
-    start = pd.Timestamp('2023-01-01')
-    end = pd.Timestamp('2024-12-31')
-
-    # Recupera i dati
-    data = Daily(location, start, end)
-    data = data.fetch()
-
-    # Crea il DataFrame con le colonne desiderate
-    df = data[['tavg', 'tmin', 'tmax', 'prcp']]
-    df.columns = ['temperatura_media', 'temperatura_minima', 'temperatura_massima', 'precipitazioni']
-
-    return df
 
 def filter_dataset_by_date_range(start_date, end_date):
     if start_date is not None and end_date is not None:
