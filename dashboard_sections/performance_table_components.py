@@ -129,13 +129,13 @@ def table_performances_variety(order_image, production_dataset, vineyard_dataset
                 ], className='textCellHeader', id='avg_quantity_header_variety'),
                 html.Th([
                     dbc.Container([
-                        html.Div("Qualitá media", className='textCellHeader', style={'color': '#365185', 'cursor': 'pointer'}),
+                        html.Div("Qualitá media (Kg)", className='textCellHeader', style={'color': '#365185', 'cursor': 'pointer'}),
                         html.Img(src=order_image, style={'width': '15px', 'height': '15px', 'margin-top': '2px'}),
                     ], style={'display':'flex', 'justify-content':'center'})
                 ], className='textCellHeader', id='avg_quality_header_variety'),
                 html.Th([
                     dbc.Container([
-                        html.Div("Costo medio", className='textCellHeader', style={'color': '#365185', 'cursor': 'pointer'}),
+                        html.Div("Costo medio (€)", className='textCellHeader', style={'color': '#365185', 'cursor': 'pointer'}),
                         html.Img(src=order_image, style={'width': '15px', 'height': '15px', 'margin-top': '2px'}),
                     ], style={'display': 'flex', 'justify-content': 'center'})
                 ], className='textCellHeader', id='avg_price_header_variety'),
@@ -295,7 +295,7 @@ def table_performances_vineyards(order_image, production_dataset, vineyard_datas
                 text_table_cell_header("Produzione"),
                 html.Th([
                     dbc.Container([
-                        html.Div("Quantitá media", style={'color': '#365185', 'cursor': 'pointer'}),
+                        html.Div("Quantitá media (Kg)", style={'color': '#365185', 'cursor': 'pointer'}),
                         html.Img(src=order_image, style={'width': '15px', 'height': '15px', 'margin-top': '2px'}),
                     ], style={'display': 'flex', 'justify-content': 'center'})
                 ], className='textCellHeader', id='avg_quantity_header_vineyards'),
@@ -307,7 +307,7 @@ def table_performances_vineyards(order_image, production_dataset, vineyard_datas
                 ], className='textCellHeader', id='avg_quality_header_vineyards'),
                 html.Th([
                     dbc.Container([
-                        html.Div("Costo medio", className='textCellHeader', style={'color': '#365185', 'cursor': 'pointer'}),
+                        html.Div("Costo medio (€)", className='textCellHeader', style={'color': '#365185', 'cursor': 'pointer'}),
                         html.Img(src=order_image, style={'width': '15px', 'height': '15px', 'margin-top': '2px'}),
                     ], style={'display': 'flex', 'justify-content': 'center'})
                 ], className='textCellHeader', id='avg_price_header_vineyards'),
@@ -482,7 +482,7 @@ def table_performances_sell_orders(order_image, orders_dataset):
                 ], className='textCellHeader', id='avg_quantity_header'),
                 html.Th([
                     dbc.Container([
-                        html.Div("Spesa media", className='textCellHeader',
+                        html.Div("Spesa media (€)", className='textCellHeader',
                                  style={'color': '#365185', 'cursor': 'pointer'}),
                         html.Img(src=order_image, style={'width': '15px', 'height': '15px', 'margin-top': '2px'}),
                     ], style={'display': 'flex', 'justify-content': 'center'})

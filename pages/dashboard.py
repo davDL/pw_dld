@@ -8,7 +8,8 @@ import pandas as pd
 from datetime import date
 import os
 from dashboard_sections.registry_table_components import table_in_row_machinery, table_in_row_workers, \
-    table_in_row_vineyards, table_in_row_production, table_in_row_orders, table_in_row_production_yield
+    table_in_row_vineyards, table_in_row_production, table_in_row_orders, table_in_row_production_yield, \
+    table_in_row_production_single_page, table_in_row_production_yield_single_page, table_in_row_orders_single_page
 from dashboard_sections.performance_table_components import table_performances_vineyards, table_performances_variety, table_performances_sell_orders
 from common_components import home_performances_section, elevated_bar, home_section
 from dashboard_sections.global_performances_components import get_global_performances_cards
@@ -45,11 +46,55 @@ order_icon = dash.get_asset_url('ic_arrow_down_black.png')
 global_variables = {}
 global_variables['clicked_times'] = 0
 
-def plot_data(df, y_columns):
+mesi_italiani = {
+        'January': 'Gennaio',
+        'February': 'Febbraio',
+        'March': 'Marzo',
+        'April': 'Aprile',
+        'May': 'Maggio',
+        'June': 'Giugno',
+        'July': 'Luglio',
+        'August': 'Agosto',
+        'September': 'Settembre',
+        'October': 'Ottobre',
+        'November': 'Novembre',
+        'December': 'Dicembre'
+    }
+
+def plot_data_temp(df, y_columns):
     fig = go.Figure()
+
+    # Funzione per tradurre il nome del mese
+    def traduce_mese(mese):
+        return mesi_italiani.get(mese, mese)
+
+    df.index = df.index.strftime('%d %B %Y')
+    df.index = df.index.str.replace(r'\b(\w+)\b', lambda m: traduce_mese(m.group(1)), regex=True)
+
+    for col in y_columns:
+        fig.add_trace(go.Scatter(x=df.index, y=df[col], name=col))
+
+    fig.update_layout(xaxis_title='Tempo')
+    fig.update_layout(yaxis_title='Temperatura (°C)')
+    fig.update_layout(
+        xaxis=dict(
+            tickformat='%d %B %Y',
+        )
+    )
+    return fig
+
+def plot_data_prcp(df, y_columns):
+    fig = go.Figure()
+
     for col in y_columns:
         fig.add_trace(go.Scatter(x=df.index, y=df[col], name=col))
     fig.update_layout(xaxis_title='Tempo')
+    fig.update_layout(yaxis_title='Precipitazioni (mm)')
+    fig.update_layout(
+        xaxis=dict(
+            tickformat='%d %B %Y',
+        )
+    )
     return fig
 
 def get_filtered_weather(start, end):
@@ -226,6 +271,9 @@ def generate_reason_autunno(start_date_millis):
 
     return reason_autunno
 
+def get_id_by_variety(variety, id_varieta):
+    return id_varieta[variety]
+
 def generate_production_rows():
     path_progetto = "C:\\Users\\dld\\PycharmProjects\\project_work_dld"
     nome_file = "produzione.csv"
@@ -246,6 +294,19 @@ def generate_production_rows():
         "Cabernet Sauvignon": (9, 11)
     }
 
+    id_varieta = {
+        "Pinot Grigio": 1,
+        "Chardonnay": 2,
+        "Syrah": 3,
+        "Cabernet Franc": 4,
+        "Sauvignon Blanc": 5,
+        "Merlot": 6,
+        "Nebbiolo": 7,
+        "Sangiovese": 7,
+        "Pinot Noir": 9,
+        "Cabernet Sauvignon": 10
+    }
+
     def get_production_start_month (variety, all_variety):
         anno = random.randint(2023, 2024)
         mese_inizio, mese_fine = all_variety[variety]
@@ -253,8 +314,8 @@ def generate_production_rows():
         fine = int(pd.Timestamp(f"{anno}-{mese_inizio}-30").timestamp() * 1000)
         return random.randint(inizio, fine)
 
-    def get_production_end_month (variety, all_variety):
-        anno = random.randint(2023, 2024)
+    def get_production_end_month (variety, all_variety, data_inizio):
+        anno = pd.to_datetime(data_inizio, unit='ms').year
         mese_inizio, mese_fine = all_variety[variety]
         inizio = int(pd.Timestamp(f"{anno}-{mese_fine}-01").timestamp() * 1000)
         fine = int(pd.Timestamp(f"{anno}-{mese_fine}-30").timestamp() * 1000)
@@ -263,13 +324,13 @@ def generate_production_rows():
     # Creazione del DataFrame
     df = pd.DataFrame({
         'ID': range(1, 1001),
-        'id_vigneto': np.random.randint(1, 11, size=1000),
         'varieta': np.random.choice(varieta, size=1000),
     })
 
     # Applicazione delle funzioni a ogni riga
+    df['id_vigneto'] = df.apply(lambda row: get_id_by_variety(row['varieta'], id_varieta), axis=1)
     df['data_inizio'] = df.apply(lambda row: get_production_start_month(row['varieta'], periodi_raccolta), axis=1)
-    df['data_fine'] = df.apply(lambda row: get_production_end_month(row['varieta'], periodi_raccolta), axis=1)
+    df['data_fine'] = df.apply(lambda row: get_production_end_month(row['varieta'], periodi_raccolta, row['data_inizio']), axis=1)
 
     # Funzione per generare costi di produzione più realistici (con variazioni in base alla varietà)
     def genera_costo_produzione(varieta_vino, quantita):
@@ -347,23 +408,38 @@ def generate_orders():
     # Salvataggio del DataFrame come CSV
     df.to_csv(percorso_completo, index=False)
 
-def filter_dataset_by_date_range(start_date, end_date):
+def filter_prod_dataset_by_date_range(start_date, end_date):
     if start_date is not None and end_date is not None:
         timestamp_start_date = pd.to_datetime(start_date, format='%Y-%m-%d')
         timestamp_end_date = pd.to_datetime(end_date, format='%Y-%m-%d')
 
         # Conversione dei formati in datetime
         production_dataset['data_inizio'] = pd.to_datetime(production_dataset['data_inizio'], unit='ms')
+
+        # Creazione della maschera
+        production_mask = ((production_dataset['data_inizio'] >= timestamp_start_date) & (production_dataset['data_inizio'] <= timestamp_end_date)
+                           | (production_dataset['data_fine'] >= timestamp_start_date) & (production_dataset['data_fine'] <= timestamp_end_date))
+
+        # Applicazione della maschera
+        return production_dataset[production_mask]
+
+    return production_dataset
+
+def filter_orders_dataset_by_date_range(start_date, end_date):
+    if start_date is not None and end_date is not None:
+        timestamp_start_date = pd.to_datetime(start_date, format='%Y-%m-%d')
+        timestamp_end_date = pd.to_datetime(end_date, format='%Y-%m-%d')
+
+        # Conversione dei formati in datetime
         orders_dataset['data_ordine'] = pd.to_datetime(orders_dataset['data_ordine'], unit='ms')
 
         # Creazione della maschera
-        production_mask = (production_dataset['data_inizio'] >= timestamp_start_date) & (production_dataset['data_inizio'] <= timestamp_end_date)
         orders_mask = (orders_dataset['data_ordine'] >= timestamp_start_date) & (orders_dataset['data_ordine'] <= timestamp_end_date)
 
         # Applicazione della maschera
-        return production_dataset[production_mask], orders_dataset[orders_mask]
+        return orders_dataset[orders_mask]
 
-    return production_dataset, orders_dataset
+    return orders_dataset
 
 def get_home():
     #generate_production_rows()
@@ -397,7 +473,8 @@ def get_home():
             start = start_date
             end = end_date
 
-            filtered_production_dataset, filtered_orders_dataset = filter_dataset_by_date_range(start_date, end_date)
+            filtered_production_dataset = filter_prod_dataset_by_date_range(start_date, end_date)
+            filtered_orders_dataset = filter_orders_dataset_by_date_range(start_date, end_date)
 
             if start is None:
                 start = pd.Timestamp("2023-01-01")
@@ -440,23 +517,40 @@ def get_home():
                          dcc.Graph(figure={'data': [
                              {'x': filtered_production_dataset['ID'], 'y': filtered_production_dataset['quantita_prodotta_prevista'], 'type': 'line', 'name': 'Previsto'},
                              {'x': filtered_production_dataset['ID'], 'y': filtered_production_dataset['quantia_prodotta_effettiva'], 'type': 'line', 'name': 'Effettivo'}
-                         ]})
+                         ],
+                             'layout': {
+                                 'xaxis': {'title': 'ID Prodotto'},  # Titolo asse x
+                                 'yaxis': {'title': 'Quantità Prodotta'}  # Titolo asse y
+                             }
+                         })
             ),
             home_section("Andamento delle temperature nel tempo",
-                         dcc.Graph(figure=plot_data(filtered_weather_dataset,['temperatura_minima', 'temperatura_massima'])),
+                         dcc.Graph(figure=plot_data_temp(filtered_weather_dataset,['temperatura_minima', 'temperatura_massima'])),
             ),
             home_section("Andamento delle precipitazioni nel tempo",
-                         dcc.Graph(figure=plot_data(filtered_weather_dataset, ['precipitazioni']))
+                         dcc.Graph(figure=plot_data_prcp(filtered_weather_dataset, ['precipitazioni']))
             ),
             home_section("Produzioni",
-                         table_in_row_production(production_dataset=filtered_production_dataset)
-            ),
+                         table_in_row_production_single_page(production_dataset=filtered_production_dataset)
+                         if 0 < filtered_production_dataset.shape[0] <= 5
+                         else (table_in_row_production(production_dataset=filtered_production_dataset)
+                               if filtered_production_dataset.shape[0] > 0
+                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin':'32px'}))
+                         ),
             home_section("Produzioni - resa raccolti",
-                         table_in_row_production_yield(production_dataset=filtered_production_dataset)
-            ),
+                         table_in_row_production_yield_single_page(production_dataset=filtered_production_dataset)
+                         if 0 < filtered_production_dataset.shape[0] <= 5
+                         else (table_in_row_production_yield(production_dataset=filtered_production_dataset)
+                               if filtered_production_dataset.shape[0] > 0
+                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin':'32px'}))
+                         ),
             home_section("Ordini",
-                         table_in_row_orders(orders_dataset=filtered_orders_dataset)
-            ),
+                         table_in_row_orders_single_page(orders_dataset_=filtered_orders_dataset)
+                         if 0 < filtered_orders_dataset.shape[0] <= 5
+                         else (table_in_row_orders(orders_dataset=filtered_orders_dataset)
+                               if filtered_orders_dataset.shape[0] > 0
+                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'}))
+                         ),
         )
 
     production_dataset['data_inizio'] = pd.to_datetime(production_dataset['data_inizio'], unit='ms')
@@ -478,6 +572,7 @@ def get_home():
                         max_date_allowed=date(2030, 12, 31),
                         initial_visible_month=date(today().year, today().month, today().day),
                         end_date=date(today().year, today().month, today().day),
+                        display_format='DD-MM-YYYY'
                     ),
                     html.Div(id='output-container-date-picker-range', style={'cursor': 'pointer'}),
                     html.Img(src=reset_filters_icon, id='reset_filters',
@@ -504,33 +599,50 @@ def get_home():
                          dcc.Graph(figure={'data': [
                              {'x': production_dataset['ID'], 'y': production_dataset['quantita_prodotta_prevista'], 'type': 'line', 'name': 'Previsto'},
                              {'x': production_dataset['ID'], 'y': production_dataset['quantia_prodotta_effettiva'], 'type': 'line', 'name': 'Effettivo'}
-                         ]})
+                         ],
+                             'layout': {
+                                 'xaxis': {'title': 'ID Prodotto'},  # Titolo asse x
+                                 'yaxis': {'title': 'Quantità Prodotta'}  # Titolo asse y
+                             }
+                         }),
             )
         ], id='produced-quantity-graph'),
         dbc.Container([
             home_section("Andamento delle temperature nel tempo",
-                         dcc.Graph(figure=plot_data(weather_conditions_dataset, ['temperatura_minima', 'temperatura_massima'])),
+                         dcc.Graph(figure=plot_data_temp(weather_conditions_dataset, ['temperatura_minima', 'temperatura_massima'])),
             )
         ], id='temp-graph'),
         dbc.Container([
             home_section("Andamento delle precipitazioni nel tempo",
-                         dcc.Graph(figure=plot_data(weather_conditions_dataset, ['precipitazioni']))
+                         dcc.Graph(figure=plot_data_prcp(weather_conditions_dataset, ['precipitazioni']))
             )
         ], id='prcp-graph'),
         dbc.Container([
             home_section("Produzioni",
-                         table_in_row_production(production_dataset=production_dataset)
-            ),
+                         table_in_row_production_single_page(production_dataset=production_dataset)
+                         if 0 < production_dataset.shape[0] <= 5
+                         else (table_in_row_production(production_dataset=production_dataset)
+                               if production_dataset.shape[0] > 0
+                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'}))
+                         )
         ], id='prods'),
         dbc.Container([
             home_section("Produzioni - resa raccolti",
-                         table_in_row_production_yield(production_dataset=production_dataset)
-            ),
+                         table_in_row_production_yield_single_page(production_dataset=production_dataset)
+                         if 0 < production_dataset.shape[0] <= 5
+                         else (table_in_row_production_yield(production_dataset=production_dataset)
+                               if production_dataset.shape[0] > 0
+                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'}))
+                         ),
         ], id='prods-yield'),
         dbc.Container([
             home_section("Ordini",
-                         table_in_row_orders(orders_dataset=orders_dataset)
-            ),
+                         table_in_row_orders_single_page(orders_dataset_=orders_dataset)
+                         if 0 < orders_dataset.shape[0] <= 5
+                         else (table_in_row_orders(orders_dataset=orders_dataset)
+                               if orders_dataset.shape[0] > 0
+                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'}))
+                         ),
         ], id='ordrs'),
         dbc.Container([
             home_section("Varietá e produzione",
@@ -558,7 +670,6 @@ def get_home():
                          )
             )
         ], id= 'orders_performances'),
-        # tabelle agenti clienti affiancate
         dbc.Container([
             home_section("Macchine", table_in_row_machinery(
                 machinery_dataset=machinery_dataset
