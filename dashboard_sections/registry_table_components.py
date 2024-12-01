@@ -389,7 +389,7 @@ def table_in_row_orders(orders_dataset):
     return dbc.Container([
         dash_table.DataTable(
             data=df_to_show.to_dict('records'),
-            columns=[{'id': c, 'name': get_name_prod_yield(c)} for c in df_to_show.columns],
+            columns=[{'id': c, 'name': get_name_orders(c)} for c in df_to_show.columns],
             page_size=10,
             style_as_list_view=True,
             style_header={
