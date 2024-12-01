@@ -250,9 +250,6 @@ def table_in_row_production(production_dataset):
     df_to_show['quantia_prodotta_effettiva'] = df_to_show['quantia_prodotta_effettiva'].round(2)
 
     return dbc.Container([
-        html.Div([
-            html.H5(["Elenco della produzione"], style={'color': '#365185'}),
-        ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between','margin-bottom': '8px'}),
         dash_table.DataTable(
             data=df_to_show.to_dict('records'),
             columns=[{'id': c, 'name': get_name_prod(c)} for c in df_to_show.columns],
@@ -319,10 +316,6 @@ def table_in_row_production_yield(production_dataset):
     df_to_show.loc[:, 'quantia_prodotta_effettiva'] = df_to_show['quantia_prodotta_effettiva'].round(2)
 
     return dbc.Container([
-        html.Div([
-            html.H5(["Elenco della produzione"], style={'color': '#365185'}),
-        ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between',
-                  'margin-bottom': '8px'}),
         dash_table.DataTable(
             data=df_to_show.to_dict('records'),
             columns=[{'id': c, 'name': get_name_prod_yield(c)} for c in df_to_show.columns],
@@ -394,10 +387,6 @@ def table_in_row_orders(orders_dataset):
     df_to_show['data_ordine'] = df_to_show['data_ordine'].dt.strftime('%d-%m-%Y')
 
     return dbc.Container([
-        html.Div([
-            html.H5(["Elenco della produzione"], style={'color': '#365185'}),
-        ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between',
-                  'margin-bottom': '8px'}),
         dash_table.DataTable(
             data=df_to_show.to_dict('records'),
             columns=[{'id': c, 'name': get_name_prod_yield(c)} for c in df_to_show.columns],
