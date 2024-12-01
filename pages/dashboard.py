@@ -654,11 +654,13 @@ def get_home():
             )
         ], id= 'orders_performances'),
         dbc.Container([
-            home_section("Macchine", table_in_row_machinery(
-                machinery_dataset=machinery_dataset
-            )),
             home_section("Lavoratori", table_in_row_workers(
                 workers_dataset=workers_dataset
+            )),
+        ], className='inRowTables'),
+        dbc.Container([
+            home_section("Macchine", table_in_row_machinery(
+                machinery_dataset=machinery_dataset
             )),
         ], className='inRowTables'),
         home_section("Vigneti",

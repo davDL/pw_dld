@@ -36,8 +36,7 @@ def get_global_performances_cards(production_dataset, orders_dataset, workers_da
         # Formula: (Quantità prodotta) / (Ore di lavoro totali dei lavoratori)
         filtered_workers_dataset = workers_dataset[
             (workers_dataset['ruolo'] == 'viticoltore') | (workers_dataset['ruolo'] == 'imbottigliatore')]
-        workers_efficiency = filtered_workers_dataset['quantita_prodotta'].sum() // filtered_workers_dataset[
-            'ore_lavoro'].sum()
+        workers_efficiency = filtered_workers_dataset['quantita_prodotta'].sum() // filtered_workers_dataset['ore_lavoro'].sum()
 
         # Intensità energetica:
         # Formula: Energia_consumata / Quantità_prodotta
@@ -78,10 +77,10 @@ def get_global_performances_cards(production_dataset, orders_dataset, workers_da
                              "nel periodo",
                              "cardBase lightViolet",
                              dash.get_asset_url('ic_service_level.png')),
-            performance_card("Intensità energetica",
-                             '{value} kW/h'.format(value=energy_consumption.round(4)),
+            performance_card("Intensità energetica media/Kg",
+                             '{value} kW/h'.format(value=energy_consumption.round(3)),
                              "nel periodo",
                              "cardBase violet",
                              dash.get_asset_url('ic_service_level.png')),
         ], className="alignCenterContainer")
-    ])
+    ], style={'overflow-x': 'auto'})

@@ -49,7 +49,7 @@ def home_section(title, content):
         ], width=11),
         dbc.Container([
             content
-        ], className="tableSection elevation")
+        ], className="tableSection elevation", style={'overflow-x': 'auto'})
     ])
 
 def home_performances_section(title, content):
@@ -62,7 +62,7 @@ def home_performances_section(title, content):
         dbc.Container([
             content
         ])
-    ], className="tableSection")
+    ], className="tableSection", style={'overflow-x': 'auto'})
 
 def elevated_bar(content, image) :
     return html.Div([
