@@ -41,7 +41,7 @@ def get_global_performances_cards(production_dataset, orders_dataset, workers_da
 
         # Intensità energetica:
         # Formula: Energia_consumata / Quantità_prodotta
-        energy_consumption = production_dataset['consumi_energia'].sum() // production_dataset['quantia_prodotta_effettiva'].sum()
+        energy_consumption = production_dataset['consumi_energia'].sum() / production_dataset['quantia_prodotta_effettiva'].sum()
 
         if orders_dataset_count != 0 and production_dataset_count != 0:
             # Valore medio del carrello:
@@ -69,17 +69,17 @@ def get_global_performances_cards(production_dataset, orders_dataset, workers_da
         ], className="alignCenterContainer"),
         dbc.Container([
             performance_card("Efficienza oraria dei macchinari",
-                             '{value} kg/h'.format(value=int(machinery_efficiency)),
+                             '{value} kg/h'.format(value=machinery_efficiency.round(3)),
                              "nel periodo",
                              "cardBase blue",
                              dash.get_asset_url('ic_service_level.png')),
             performance_card("Efficienza oraria dei lavoratori",
-                             '{value} Kg/h'.format(value=int(workers_efficiency)),
+                             '{value} Kg/h'.format(value=workers_efficiency.round(3)),
                              "nel periodo",
                              "cardBase lightViolet",
                              dash.get_asset_url('ic_service_level.png')),
             performance_card("Intensità energetica",
-                             '{value} kW/h'.format(value=int(energy_consumption)),
+                             '{value} kW/h'.format(value=energy_consumption.round(4)),
                              "nel periodo",
                              "cardBase violet",
                              dash.get_asset_url('ic_service_level.png')),
