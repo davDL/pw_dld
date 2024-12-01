@@ -1,5 +1,5 @@
 import pandas as pd
-from dash import html, Input, Output, callback
+from dash import html, Input, Output, callback, dash_table
 import dash_bootstrap_components as dbc
 import common_utils
 from common_components import text_table_cell, text_table_cell_header, text_table_cell_mid
@@ -205,326 +205,231 @@ def get_table_in_row_vineyards(dataset, counter):
     return table
 
 
-def production_table_row(row):
-    return html.Tr([
-        text_table_cell(row.get("ID")),
-        text_table_cell_mid(pd.to_datetime(row.get('data_inizio'), unit='ms').strftime('%d/%m/%Y')),
-        text_table_cell_mid(pd.to_datetime(row.get('data_fine'), unit='ms').strftime('%d/%m/%Y')),
-        text_table_cell(row.get("id_vigneto")),
-        text_table_cell(round(float(row.get("quantita_prodotta_prevista")), 2)),
-        text_table_cell(round(float(row.get("quantia_prodotta_effettiva")), 2)),
-        text_table_cell(row.get("qualita")),
-        text_table_cell(round(float(row.get("costo_totale_produzione")), 2)),
-        text_table_cell(round(float(row.get("consumi_acqua")), 2)),
-        text_table_cell(round(float(row.get("consumi_energia")), 2)),
-        text_table_cell(round(float(row.get("litri_vino")), 2)),
-        text_table_cell(round(float(row.get("bottiglie_prodotte")), 2))
-    ], style={'height': '51px', 'width': '50px'})
+def get_name_prod(c):
+    match c:
+        case "ID":
+            return "Id"
+        case "data_inizio":
+            return "Data inizio"
+        case "data_fine":
+            return "Data fine"
+        case "id_vigneto":
+            return "Id vigneto"
+        case "quantita_prodotta_prevista":
+            return "Quantitá prevista(Kg)"
+        case "quantia_prodotta_effettiva":
+            return "Quantitá effettiva(Kg)"
+        case "qualita":
+            return "Qualitá"
+        case "costo_totale_produzione":
+            return "Costo totale produzione(€)"
+        case "consumi_acqua":
+            return "Consumi acqua(l)"
+        case "consumi_energia":
+            return "Consumi energia(kW/h)"
+        case"litri_vino":
+            return "Vino (l)"
+        case "bottiglie_prodotte":
+            return "Bottiglie prodotte"
+        case _:
+            return "column"
 
 def table_in_row_production(production_dataset):
-    page_size = 5
+    columns = ['ID', 'data_inizio', 'data_fine', 'quantita_prodotta_prevista', 'quantia_prodotta_effettiva', 'qualita',
+               'costo_totale_produzione', 'consumi_acqua', 'consumi_energia', 'litri_vino', 'bottiglie_prodotte']
+    df_to_show = production_dataset[columns]
 
-    # create callback
-    @callback(
-        Output('production-table', 'children'),
-        Input('production-pagination', 'active_page'),
-    )
-    def update_list_production(page):
-        # convert active_page data to integer and set default value to 1
-        int_page = 1 if not page else int(page)
+    df_to_show['data_inizio'] = pd.to_datetime(df_to_show['data_inizio'])
+    df_to_show['data_fine'] = pd.to_datetime(df_to_show['data_fine'])
 
-        # define filter index range based on active page
-        filter_index_1 = (int_page - 1) * page_size
-        filter_index_2 = int_page * page_size
+    # Formatta le date nel formato desiderato (GG-MM-AAAA)
+    df_to_show['data_inizio'] = df_to_show['data_inizio'].dt.strftime('%d-%m-%Y')
+    df_to_show['data_fine'] = df_to_show['data_fine'].dt.strftime('%d-%m-%Y')
 
-        # get data by filter range based on active page number
-        filter_dataset = production_dataset[filter_index_1:filter_index_2]
-
-        # load data to dash bootstrap table component
-        table = get_table_in_row_production(filter_dataset, (filter_index_1 + 1))
-
-        return table
+    df_to_show['litri_vino'] = df_to_show['litri_vino'].round(2)
+    df_to_show['quantia_prodotta_effettiva'] = df_to_show['quantia_prodotta_effettiva'].round(2)
 
     return dbc.Container([
         html.Div([
             html.H5(["Elenco della produzione"], style={'color': '#365185'}),
-        ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between',
-                  'margin-bottom': '8px'}),
-        dbc.Table(id='production-table', style={'min-height': '350px'}),
-        dbc.Pagination(id='production-pagination', max_value=common_utils.get_total_page(page_size, production_dataset.shape[0]),
-                       previous_next=True, fully_expanded=False,
-                       style={'padding-bottom': '20px', 'align-self': 'flex-end'}),
-    ], style={'display': 'flex', 'flex-direction': 'column'})
-
-def get_table_in_row_production(dataset, counter):
-    table_header = [
-        html.Thead(
-            html.Tr([
-                text_table_cell_header("Id"),
-                text_table_cell_header("Data inizio"),
-                text_table_cell_header("Data fine"),
-                text_table_cell_header("Id vigneto"),
-                text_table_cell_header("Quantitá prevista (Kg)"),
-                text_table_cell_header("Quantitá effettiva (Kg)"),
-                text_table_cell_header("Qualitá"),
-                text_table_cell_header("Costo totale produzione (€)"),
-                text_table_cell_header("Consumi acqua (l)"),
-                text_table_cell_header("Consumi energia (kW/h)"),
-                text_table_cell_header("Vino (l)"),
-                text_table_cell_header("Bottiglie prodotte")
-            ], style={'height': '51px', 'width': '50px'})
+        ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between','margin-bottom': '8px'}),
+        dash_table.DataTable(
+            data=df_to_show.to_dict('records'),
+            columns=[{'id': c, 'name': get_name_prod(c)} for c in df_to_show.columns],
+            page_size=10,
+            style_as_list_view=True,
+            style_header={
+                'font-weight': 'bold',
+                'text-align': 'center',
+                'font-family': 'Verdana',
+                'font-size': '8pt',
+                'overflow': 'hidden',
+                'white-space': 'nowrap',
+                'color': '#365185'
+            },
+            style_cell={
+                'text-align': 'center',
+                'font-family':'Verdana',
+                'padding':'5px',
+                'font-size':'8pt',
+                'overflow':'hidden',
+                'text-overflow':'ellipsis',
+                'white-space':'nowrap',
+                'color':'#365185'
+            },style_data_conditional=[
+                {
+                    'if': {'row_index': 'odd'},
+                    'backgroundColor': '#f2f2f2'
+                },
+                {
+                    'if': {'row_index': 'even'},
+                    'backgroundColor': 'white'
+                }
+            ]
         )
-    ]
-
-    table_rows = []
-    for index, row in dataset.iterrows():
-        table_rows.append(production_table_row(row))
-        counter += 1
-
-    table_body = [html.Tbody(table_rows)]
-    table = dbc.Table(table_header + table_body, striped=True, bordered=True, hover=True)
-
-    return table
-
-def table_in_row_production_single_page(production_dataset):
-    table_header = [
-        html.Thead(
-            html.Tr([
-                text_table_cell_header("Id"),
-                text_table_cell_header("Data inizio"),
-                text_table_cell_header("Data fine"),
-                text_table_cell_header("Id vigneto"),
-                text_table_cell_header("Quantitá prevista (Kg)"),
-                text_table_cell_header("Quantitá effettiva (Kg)"),
-                text_table_cell_header("Qualitá"),
-                text_table_cell_header("Costo totale produzione (€)"),
-                text_table_cell_header("Consumi acqua (l)"),
-                text_table_cell_header("Consumi energia (kW/h)"),
-                text_table_cell_header("Vino (l)"),
-                text_table_cell_header("Bottiglie prodotte")
-            ], style={'height': '51px', 'width': '50px'})
-        )
-    ]
-
-    table_rows = []
-    for index, row in production_dataset.iterrows():
-        table_rows.append(production_table_row(row))
-
-    table_body = [html.Tbody(table_rows)]
-    table = dbc.Table(table_header + table_body, striped=True, bordered=True, hover=True)
-
-    return dbc.Container([
-        html.Div([
-            html.H5(["Elenco della produzione"], style={'color': '#365185'}),
-        ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between',
-                  'margin-bottom': '8px'}),
-        dbc.Table(id='production-table', style={'min-height': '350px'}, children=table),
-    ], style={'display': 'flex', 'flex-direction': 'column'})
+    ], style={'display': 'flex', 'flex-direction': 'column', 'overflow-x': 'auto'})
 
 
-def production_yield_table_row(row):
-    return html.Tr([
-        text_table_cell(row.get("ID")),
-        text_table_cell(row.get("id_vigneto")),
-        text_table_cell(row.get("varieta")),
-        text_table_cell(row.get("quantita_prodotta_prevista")),
-        text_table_cell(round(float(row.get("quantia_prodotta_effettiva")),2)),
-        text_table_cell(row.get("reason_primavera")),
-        text_table_cell(row.get("reason_estate")),
-        text_table_cell(row.get("reason_autunno"))
-    ], style={'height': '51px', 'width': '50px'})
+def get_name_prod_yield(c):
+    match c:
+        case "ID":
+            return "Id"
+        case "id_vigneto":
+            return "Id vigneto"
+        case "varieta":
+            return "Varietá"
+        case "quantita_prodotta_prevista":
+            return "Quantitá prevista(Kg)"
+        case "quantia_prodotta_effettiva":
+            return "Quantitá effettiva(Kg)"
+        case "reason_primavera":
+            return "Primavera"
+        case "reason_estate":
+            return "Estate"
+        case "reason_autunno":
+            return "Autunno"
+        case _:
+            return "column"
 
 def table_in_row_production_yield(production_dataset):
-    page_size = 5
+    columns = ['ID', 'id_vigneto', 'varieta', 'quantita_prodotta_prevista',
+               'quantia_prodotta_effettiva', 'reason_primavera', 'reason_estate', 'reason_autunno']
+    df_to_show = production_dataset[columns]
 
-    # create callback
-    @callback(
-        Output('production-table-yield', 'children'),
-        Input('production-pagination-yield', 'active_page'),
-    )
-    def update_list_production(page):
-        # convert active_page data to integer and set default value to 1
-        int_page = 1 if not page else int(page)
-
-        # define filter index range based on active page
-        filter_index_1 = (int_page - 1) * page_size
-        filter_index_2 = int_page * page_size
-
-        # get data by filter range based on active page number
-        filter_dataset = production_dataset[filter_index_1:filter_index_2]
-
-        # load data to dash bootstrap table component
-        table = get_table_in_row_production_yield(filter_dataset, (filter_index_1 + 1))
-
-        return table
-
-    return dbc.Container([
-        html.Div([
-            html.H5(["Elenco della produzione - resa vigneto"], style={'color': '#365185'}),
-        ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between',
-                  'margin-bottom': '8px'}),
-        dbc.Table(id='production-table-yield', style={'min-height': '350px'}),
-        dbc.Pagination(id='production-pagination-yield', max_value=common_utils.get_total_page(page_size, production_dataset.shape[0]), previous_next=True, fully_expanded=False, style={'padding-bottom': '20px', 'align-self': 'flex-end'}),
-    ], style={'display': 'flex', 'flex-direction': 'column'})
-
-def table_in_row_production_yield_single_page(production_dataset):
-    table_header = [
-        html.Thead(
-            html.Tr([
-                text_table_cell_header("Id"),
-                text_table_cell_header("Id vigneto"),
-                text_table_cell_header("Varietá"),
-                text_table_cell_header("Quantitá prevista (Kg)"),
-                text_table_cell_header("Quantitá effettiva (Kg)"),
-                text_table_cell_header("Primavera"),
-                text_table_cell_header("Estate"),
-                text_table_cell_header("Autunno")
-            ], style={'height': '51px', 'width': '50px'})
-        )
-    ]
-
-    table_rows = []
-    for index, row in production_dataset.iterrows():
-        table_rows.append(production_yield_table_row(row))
-
-    table_body = [html.Tbody(table_rows)]
-    table = dbc.Table(table_header + table_body, striped=True, bordered=True, hover=True)
+    df_to_show.loc[:, 'quantia_prodotta_effettiva'] = df_to_show['quantia_prodotta_effettiva'].round(2)
 
     return dbc.Container([
         html.Div([
             html.H5(["Elenco della produzione"], style={'color': '#365185'}),
         ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between',
                   'margin-bottom': '8px'}),
-        dbc.Table(id='production-table', style={'min-height': '350px'}, children=table),
-    ], style={'display': 'flex', 'flex-direction': 'column'})
-
-def get_table_in_row_production_yield(dataset, counter):
-    table_header = [
-        html.Thead(
-            html.Tr([
-                text_table_cell_header("Id"),
-                text_table_cell_header("Id vigneto"),
-                text_table_cell_header("Varietá"),
-                text_table_cell_header("Quantitá prevista (Kg)"),
-                text_table_cell_header("Quantitá effettiva (Kg)"),
-                text_table_cell_header("Primavera"),
-                text_table_cell_header("Estate"),
-                text_table_cell_header("Autunno")
-            ], style={'height': '51px', 'width': '50px'})
+        dash_table.DataTable(
+            data=df_to_show.to_dict('records'),
+            columns=[{'id': c, 'name': get_name_prod_yield(c)} for c in df_to_show.columns],
+            page_size=10,
+            style_as_list_view=True,
+            style_header={
+                'font-weight': 'bold',
+                'text-align': 'center',
+                'font-family': 'Verdana',
+                'font-size': '8pt',
+                'overflow': 'hidden',
+                'white-space': 'nowrap',
+                'color': '#365185'
+            },
+            style_cell={
+                'text-align': 'center',
+                'font-family': 'Verdana',
+                'padding': '5px',
+                'font-size': '8pt',
+                'overflow': 'hidden',
+                'text-overflow': 'ellipsis',
+                'white-space': 'nowrap',
+                'color': '#365185'
+            }, style_data_conditional=[
+                {
+                    'if': {'row_index': 'odd'},
+                    'backgroundColor': '#f2f2f2'
+                },
+                {
+                    'if': {'row_index': 'even'},
+                    'backgroundColor': 'white'
+                }
+            ]
         )
-    ]
-
-    table_rows = []
-    for index, row in dataset.iterrows():
-        table_rows.append(production_yield_table_row(row))
-        counter += 1
-
-    table_body = [html.Tbody(table_rows)]
-    table = dbc.Table(table_header + table_body, striped=True, bordered=True, hover=True)
-
-    return table
+    ], style={'display': 'flex', 'flex-direction': 'column', 'overflow-x': 'auto'})
 
 
-def orders_table_row(row):
-    return html.Tr([
-        text_table_cell(row.get("ID")),
-        text_table_cell_mid(pd.to_datetime(row.get('data_ordine'), unit='ms').strftime('%d/%m/%Y')),
-        text_table_cell(row.get("id_cliente")),
-        text_table_cell(row.get("nome_cliente") + " " + row.get("cognome_cliente")),
-        text_table_cell(row.get("telefono_cliente")),
-        text_table_cell(row.get("quantita")),
-        text_table_cell(row.get("stato_ordine")),
-        text_table_cell(row.get("prezzo_totale"))
-    ], style={'height': '51px', 'width': '50px'})
+def get_name_orders(c):
+    match c:
+        case "ID":
+            return "Id"
+        case "data_ordine":
+            return "Data ordine"
+        case "id_cliente":
+            return "Id cliente"
+        case "nome_cliente":
+            return "Nome"
+        case "cognome_cliente":
+            return "Cognome"
+        case "telefono_cliente":
+            return "Telefono"
+        case "quantita":
+            return "Quantità ordinata"
+        case "stato_ordine":
+            return "Stato"
+        case "prezzo_totale":
+            return "Prezzo totale(€)"
+        case _:
+            return "column"
 
 def table_in_row_orders(orders_dataset):
-    page_size = 5
+    columns = ['ID', 'data_ordine', 'id_cliente', 'nome_cliente', 'cognome_cliente',
+               'telefono_cliente', 'quantita', 'stato_ordine', 'prezzo_totale']
+    df_to_show = orders_dataset[columns]
 
-    # create callback
-    @callback(
-        Output('orders-table', 'children'),
-        Input('orders-pagination', 'active_page'),
-    )
-    def update_list_orders(page):
-        # convert active_page data to integer and set default value to 1
-        int_page = 1 if not page else int(page)
+    df_to_show['data_ordine'] = pd.to_datetime(df_to_show['data_ordine'], unit='ms')
 
-        # define filter index range based on active page
-        filter_index_1 = (int_page - 1) * page_size
-        filter_index_2 = int_page * page_size
-
-        # get data by filter range based on active page number
-        filter_agents = orders_dataset[filter_index_1:filter_index_2]
-
-        # load data to dash bootstrap table component
-        table = get_table_in_row_orders(filter_agents,(filter_index_1 + 1))
-
-        return table
-
-    return dbc.Container([
-        html.Div([
-            html.H5(["Elenco degli ordini"], style={'color': '#365185'}),
-        ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between',
-                  'margin-bottom': '8px'}),
-        dbc.Table(id='orders-table', style={'min-height': '350px'}),
-        dbc.Pagination(id='orders-pagination', max_value=common_utils.get_total_page(page_size, orders_dataset.shape[0]),
-                       previous_next=True, fully_expanded=False,
-                       style={'padding-bottom': '20px', 'align-self': 'flex-end'}),
-    ], style={'display': 'flex', 'flex-direction': 'column'})
-
-def table_in_row_orders_single_page(orders_dataset_):
-    table_header = [
-        html.Thead(
-            html.Tr([
-                text_table_cell_header("Id"),
-                text_table_cell_header("Data ordine"),
-                text_table_cell_header("Id cliente"),
-                text_table_cell_header("Nome"),
-                text_table_cell_header("Telefono"),
-                text_table_cell_header("Quantità ordinata"),
-                text_table_cell_header("Stato"),
-                text_table_cell_header("Prezzo totale (€)")
-            ], style={'height': '51px', 'width': '50px'})
-        )
-    ]
-
-    table_rows = []
-    for index, row in orders_dataset_.iterrows():
-        table_rows.append(orders_table_row(row))
-
-    table_body = [html.Tbody(table_rows)]
-    table = dbc.Table(table_header + table_body, striped=True, bordered=True, hover=True)
+    # Formatta le date nel formato desiderato (GG-MM-AAAA)
+    df_to_show['data_ordine'] = df_to_show['data_ordine'].dt.strftime('%d-%m-%Y')
 
     return dbc.Container([
         html.Div([
             html.H5(["Elenco della produzione"], style={'color': '#365185'}),
         ], style={'display': 'flex', 'flex-direction': 'row', 'justify-content': 'space-between',
                   'margin-bottom': '8px'}),
-        dbc.Table(id='orders-table', style={'min-height': '350px'}, children=table),
-    ], style={'display': 'flex', 'flex-direction': 'column'})
-
-def get_table_in_row_orders(dataset, counter):
-    table_header = [
-        html.Thead(
-            html.Tr([
-                text_table_cell_header("Id"),
-                text_table_cell_header("Data ordine"),
-                text_table_cell_header("Id cliente"),
-                text_table_cell_header("Nome"),
-                text_table_cell_header("Telefono"),
-                text_table_cell_header("Quantità ordinata"),
-                text_table_cell_header("Stato"),
-                text_table_cell_header("Prezzo totale (€)")
-            ], style={'height': '51px', 'width': '50px'})
+        dash_table.DataTable(
+            data=df_to_show.to_dict('records'),
+            columns=[{'id': c, 'name': get_name_prod_yield(c)} for c in df_to_show.columns],
+            page_size=10,
+            style_as_list_view=True,
+            style_header={
+                'font-weight': 'bold',
+                'text-align': 'center',
+                'font-family': 'Verdana',
+                'font-size': '8pt',
+                'overflow': 'hidden',
+                'white-space': 'nowrap',
+                'color': '#365185'
+            },
+            style_cell={
+                'text-align': 'center',
+                'font-family': 'Verdana',
+                'padding': '5px',
+                'font-size': '8pt',
+                'overflow': 'hidden',
+                'text-overflow': 'ellipsis',
+                'white-space': 'nowrap',
+                'color': '#365185'
+            }, style_data_conditional=[
+                {
+                    'if': {'row_index': 'odd'},
+                    'backgroundColor': '#f2f2f2'
+                },
+                {
+                    'if': {'row_index': 'even'},
+                    'backgroundColor': 'white'
+                }
+            ]
         )
-    ]
-
-    table_rows = []
-    for index, row in dataset.iterrows():
-        table_rows.append(orders_table_row(row))
-        counter += 1
-
-    table_body = [html.Tbody(table_rows)]
-    table = dbc.Table(table_header + table_body, striped=True, bordered=True, hover=True)
-
-    return table
+    ], style={'display': 'flex', 'flex-direction': 'column', 'overflow-x': 'auto'})

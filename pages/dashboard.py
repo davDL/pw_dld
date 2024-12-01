@@ -8,8 +8,7 @@ import pandas as pd
 from datetime import date
 import os
 from dashboard_sections.registry_table_components import table_in_row_machinery, table_in_row_workers, \
-    table_in_row_vineyards, table_in_row_production, table_in_row_orders, table_in_row_production_yield, \
-    table_in_row_production_single_page, table_in_row_production_yield_single_page, table_in_row_orders_single_page
+    table_in_row_vineyards, table_in_row_production, table_in_row_production_yield, table_in_row_orders
 from dashboard_sections.performance_table_components import table_performances_vineyards, table_performances_variety, table_performances_sell_orders
 from common_components import home_performances_section, elevated_bar, home_section
 from dashboard_sections.global_performances_components import get_global_performances_cards
@@ -45,6 +44,7 @@ order_icon = dash.get_asset_url('ic_arrow_down_black.png')
 
 global_variables = {}
 global_variables['clicked_times'] = 0
+global_variables['clicked_times_2'] = 0
 
 mesi_italiani = {
         'January': 'Gennaio',
@@ -63,13 +63,6 @@ mesi_italiani = {
 
 def plot_data_temp(df, y_columns):
     fig = go.Figure()
-
-    # Funzione per tradurre il nome del mese
-    def traduce_mese(mese):
-        return mesi_italiani.get(mese, mese)
-
-    df.index = df.index.strftime('%d %B %Y')
-    df.index = df.index.str.replace(r'\b(\w+)\b', lambda m: traduce_mese(m.group(1)), regex=True)
 
     for col in y_columns:
         fig.add_trace(go.Scatter(x=df.index, y=df[col], name=col))
@@ -418,7 +411,8 @@ def filter_prod_dataset_by_date_range(start_date, end_date):
 
         # Creazione della maschera
         production_mask = ((production_dataset['data_inizio'] >= timestamp_start_date) & (production_dataset['data_inizio'] <= timestamp_end_date)
-                           | (production_dataset['data_fine'] >= timestamp_start_date) & (production_dataset['data_fine'] <= timestamp_end_date))
+                           # | (production_dataset['data_fine'] >= timestamp_start_date) & (production_dataset['data_fine'] <= timestamp_end_date)
+                           )
 
         # Applicazione della maschera
         return production_dataset[production_mask]
@@ -531,26 +525,21 @@ def get_home():
                          dcc.Graph(figure=plot_data_prcp(filtered_weather_dataset, ['precipitazioni']))
             ),
             home_section("Produzioni",
-                         table_in_row_production_single_page(production_dataset=filtered_production_dataset)
-                         if 0 < filtered_production_dataset.shape[0] <= 5
-                         else (table_in_row_production(production_dataset=filtered_production_dataset)
-                               if filtered_production_dataset.shape[0] > 0
-                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin':'32px'}))
-                         ),
+                         table_in_row_production(production_dataset=filtered_production_dataset)
+                         if production_dataset.shape[0] > 0
+                         else html.H5(["Nessun dato disponibile per il periodo selezionato"],
+                                      style={'color': '#365185', 'margin': '32px'})
+            ),
             home_section("Produzioni - resa raccolti",
-                         table_in_row_production_yield_single_page(production_dataset=filtered_production_dataset)
-                         if 0 < filtered_production_dataset.shape[0] <= 5
-                         else (table_in_row_production_yield(production_dataset=filtered_production_dataset)
-                               if filtered_production_dataset.shape[0] > 0
-                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin':'32px'}))
-                         ),
+                         table_in_row_production_yield(production_dataset=filtered_production_dataset)
+                         if filtered_production_dataset.shape[0] > 0
+                         else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'})
+            ),
             home_section("Ordini",
-                         table_in_row_orders_single_page(orders_dataset_=filtered_orders_dataset)
-                         if 0 < filtered_orders_dataset.shape[0] <= 5
-                         else (table_in_row_orders(orders_dataset=filtered_orders_dataset)
-                               if filtered_orders_dataset.shape[0] > 0
-                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'}))
-                         ),
+                         table_in_row_orders(orders_dataset=filtered_orders_dataset)
+                         if filtered_orders_dataset.shape[0] > 0
+                         else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'})
+            ),
         )
 
     production_dataset['data_inizio'] = pd.to_datetime(production_dataset['data_inizio'], unit='ms')
@@ -619,29 +608,23 @@ def get_home():
         ], id='prcp-graph'),
         dbc.Container([
             home_section("Produzioni",
-                         table_in_row_production_single_page(production_dataset=production_dataset)
-                         if 0 < production_dataset.shape[0] <= 5
-                         else (table_in_row_production(production_dataset=production_dataset)
-                               if production_dataset.shape[0] > 0
-                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'}))
-                         )
+                         table_in_row_production(production_dataset=production_dataset)
+                         if production_dataset.shape[0] > 0
+                         else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'})
+            )
         ], id='prods'),
         dbc.Container([
             home_section("Produzioni - resa raccolti",
-                         table_in_row_production_yield_single_page(production_dataset=production_dataset)
-                         if 0 < production_dataset.shape[0] <= 5
-                         else (table_in_row_production_yield(production_dataset=production_dataset)
-                               if production_dataset.shape[0] > 0
-                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'}))
-                         ),
+                         table_in_row_production_yield(production_dataset=production_dataset)
+                         if production_dataset.shape[0] > 0
+                         else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'})
+            ),
         ], id='prods-yield'),
         dbc.Container([
             home_section("Ordini",
-                         table_in_row_orders_single_page(orders_dataset_=orders_dataset)
-                         if 0 < orders_dataset.shape[0] <= 5
-                         else (table_in_row_orders(orders_dataset=orders_dataset)
-                               if orders_dataset.shape[0] > 0
-                               else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'}))
+                         table_in_row_orders(orders_dataset=orders_dataset)
+                         if orders_dataset.shape[0] > 0
+                         else html.H5(["Nessun dato disponibile per il periodo selezionato"], style={'color': '#365185', 'margin': '32px'})
                          ),
         ], id='ordrs'),
         dbc.Container([
