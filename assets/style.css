@@ -108,7 +108,7 @@ input[type="color"]:focus,
 }
 
 .sideHeadText{
-    color:#e77bfb;
+    color:#D2691E;
     margin:20px
 }
 
@@ -158,27 +158,27 @@ input[type="color"]:focus,
     border-radius: 10px;
 
     &.purple {
-        background: linear-gradient(to right, #7f54f0, #738df8);
+        background: linear-gradient(to right, #704214, #D2691E);
     }
 
     &.pink {
-        background: linear-gradient(to right, #fd9d9e, #fe658a);
+        background: linear-gradient(to right, #9C661F, #D2691E);
     }
 
     &.orange {
-        background: linear-gradient(to right, #ff7946, #ffb177);
+        background: linear-gradient(to right, #8B4513, #D2691E);
     }
 
     &.blue {
-        background: linear-gradient(to right, #2c91e2, #00e2fb);
+        background: linear-gradient(to right, #B25000, #D2691E);
     }
 
     &.lightViolet {
-        background: linear-gradient(to right, #eb9ae2, #696ff0);
+        background: linear-gradient(to right, #E59866, #D2691E);
     }
 
     &.violet {
-        background: linear-gradient(to right, #b86ad3, #f06199);
+        background: linear-gradient(to right, #222222, #D2691E);
     }
 }
 

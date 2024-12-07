@@ -1,44 +1,5 @@
-from dash import html, dcc
+from dash import html
 import dash_bootstrap_components as dbc
-
-def sidebar_header_element_dashboard(icon, status_icon):
-    return html.Div([
-        dbc.Container([
-                html.Img(src=icon,
-                         style={'width': '35px', 'height': '25px', 'margin-right': '4px'}),
-                html.Span(
-                    "Dashboard", style={'text-decoration': 'underline', 'color': '#e77bfb'}
-                ),
-            ]),
-            html.Img(src=status_icon,
-                     style={'width': '35px', 'height': '25px', 'margin-right': '4px', 'align-self': 'flex-end'},
-                     id='arrow_image'),
-    ], style={'flex-direction': 'row', 'margin-top': '16px', 'display': 'flex', 'justify-content': 'space-between', 'cursor': 'pointer'}, n_clicks=0, id="collapse-button")
-
-def sidebar_header_element_config(icon, status_icon):
-    return dbc.Container([
-        dbc.Container([
-                html.Img(src=icon,
-                         style={'width': '25px', 'height': '25px', 'margin-right': '4px'}),
-                html.Span(
-                    "Configurazione", style={'text-decoration': 'underline', 'color': '#e77bfb'},
-                    id="collapse-button2",
-                    n_clicks=0,
-                ),
-            ]),
-            html.Img(src=status_icon,
-                     style={'width': '35px', 'height': '25px', 'margin-right': '4px', 'align-self': 'flex-end'},
-                     id='arrow_image2'),
-    ], style={'flex-direction': 'row', 'margin-top': '16px', 'display': 'flex', 'justify-content': 'space-between'})
-
-def sidebar_collapse_element(label, icon, href):
-    return dbc.Container([
-                    html.Img(src=icon,
-                             style={'width': '15px', 'height': '15px', 'margin-right': '4px'}),
-                    dcc.Link(label,
-                              style={'padding': '2px', 'color': '#b4bac9', 'font-size': '10pt'},
-                              href=href)
-                ])
 
 def home_section(title, content):
     return dbc.Container([

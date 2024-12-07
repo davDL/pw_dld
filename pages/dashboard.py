@@ -4,7 +4,6 @@ import dash_bootstrap_components as dbc
 from dateutil.utils import today
 import numpy as np
 import random
-import pandas as pd
 from datetime import date
 import os
 from dashboard_sections.registry_table_components import table_in_row_machinery, table_in_row_workers, \
@@ -14,6 +13,8 @@ from common_components import home_performances_section, elevated_bar, home_sect
 from dashboard_sections.global_performances_components import get_global_performances_cards
 import plotly.graph_objects as go
 from meteostat import Point, Daily
+
+import pandas as pd
 
 dash.register_page(__name__, path='/')
 
@@ -153,21 +154,30 @@ def generate_production_quantity_by_weather(quantita_prevista, start_date_millis
     for season in range(1, 5):
         start, end = get_season_dates(start_date.year, season)
         if season == 2:
-            df_primavera = df_weather_by_date[(df_weather_by_date.index >= start) & (df_weather_by_date.index <= end)]
+            df_primavera = df_weather_by_date[(df_weather_by_date.index >= start)
+                                              & (df_weather_by_date.index <= end)]
         elif season == 3:
-            df_estate = df_weather_by_date[(df_weather_by_date.index >= start) & (df_weather_by_date.index <= end)]
+            df_estate = df_weather_by_date[(df_weather_by_date.index >= start)
+                                           & (df_weather_by_date.index <= end)]
         else:
-            df_autunno = df_weather_by_date[(df_weather_by_date.index >= start) & (df_weather_by_date.index <= end)]
+            df_autunno = df_weather_by_date[(df_weather_by_date.index >= start)
+                                            & (df_weather_by_date.index <= end)]
 
     # Conteggio delle occorrenze temperatura
-    conteggio_primavera_temp = len(df_primavera[(df_primavera['temperatura_minima'] < 10) & (df_primavera['temperatura_massima'] > 15)])
-    conteggio_estate_temp = len(df_estate[(df_estate['temperatura_minima'] < 25) & (df_estate['temperatura_massima'] > 35)])
-    conteggio_autunno_temp = len(df_autunno[(df_autunno['temperatura_minima'] < 15) & (df_autunno['temperatura_massima'] > 25)])
+    conteggio_primavera_temp = len(df_primavera[(df_primavera['temperatura_minima'] < 10)
+                                                & (df_primavera['temperatura_massima'] > 15)])
+    conteggio_estate_temp = len(df_estate[(df_estate['temperatura_minima'] < 25)
+                                          & (df_estate['temperatura_massima'] > 35)])
+    conteggio_autunno_temp = len(df_autunno[(df_autunno['temperatura_minima'] < 15)
+                                            & (df_autunno['temperatura_massima'] > 25)])
 
     # Conteggio delle occorrenze precipitazioni
-    conteggio_primavera_prcp = len(df_primavera[(df_primavera['precipitazioni'] < 2) | (df_primavera['precipitazioni'] > 4)])
-    conteggio_estate_prcp = len(df_estate[(df_estate['precipitazioni'] < 2) | (df_estate['precipitazioni'] > 4)])
-    conteggio_autunno_prcp = len(df_autunno[(df_autunno['precipitazioni'] < 2) | (df_autunno['precipitazioni'] > 4)])
+    conteggio_primavera_prcp = len(df_primavera[(df_primavera['precipitazioni'] < 2)
+                                                | (df_primavera['precipitazioni'] > 4)])
+    conteggio_estate_prcp = len(df_estate[(df_estate['precipitazioni'] < 2)
+                                          | (df_estate['precipitazioni'] > 4)])
+    conteggio_autunno_prcp = len(df_autunno[(df_autunno['precipitazioni'] < 2)
+                                            | (df_autunno['precipitazioni'] > 4)])
 
     # Riduciamo la quantità del 10% per le stagioni che superano la soglia
     if conteggio_primavera_temp + conteggio_primavera_prcp > soglia_occorrenze:
@@ -179,7 +189,7 @@ def generate_production_quantity_by_weather(quantita_prevista, start_date_millis
     if conteggio_autunno_temp + conteggio_autunno_prcp > soglia_occorrenze:
         quantita_prevista *= 0.9
 
-    return quantita_prevista
+    return quantita_prevista #la quantitá prevista viene rielaborata in quantitá effettiva a questo punto del codice
 
 def generate_reason_primavera(start_date_millis):
     soglia_occorrenze = 20
@@ -329,21 +339,21 @@ def generate_production_rows():
     def genera_costo_produzione(varieta_vino, quantita):
         # Costi base per varietà (semplificati)
         costi_base = {
-            "Pinot Grigio": 1.5,  # Varietà spesso coltivata in grandi volumi, costo medio
-            "Chardonnay": 1.8,  # Versatilità e domanda elevata
-            "Syrah": 2.2,  # Spesso utilizzata per vini di alta qualità, costo più elevato
-            "Cabernet Franc": 2.0,  # Qualità e versatilità
-            "Sauvignon Blanc": 1.6,  # Popolarità e resa generalmente buona
-            "Merlot": 1.9,  # Versatilità e diffusione
-            "Nebbiolo": 2.5,  # Bassa resa, vini pregiati, costo elevato
-            "Sangiovese": 1.8,  # Varietà molto diffusa in Italia, costo medio
-            "Pinot Noir": 2.3,  # Bassa resa, vini pregiati, costo elevato
-            "Cabernet Sauvignon": 2.1,  # Varietà molto apprezzata, costo medio-alto
-            "Barbera": 1.7,  # Varietà molto diffusa in Piemonte
-            "Tempranillo": 1.9,  # Varietà spagnola molto versatile
-            "Grenache": 1.8,  # Varietà utilizzata in molti blend
-            "Riesling": 2.0,  # Varietà aromatica, spesso coltivata in climi freschi
-            "Pinot Bianco": 1.6,  # Varietà spesso utilizzata per vini base e spumanti
+            "Pinot Grigio": 1.5,
+            "Chardonnay": 1.8,
+            "Syrah": 2.2,
+            "Cabernet Franc": 2.0,
+            "Sauvignon Blanc": 1.6,
+            "Merlot": 1.9,
+            "Nebbiolo": 2.5,
+            "Sangiovese": 1.8,
+            "Pinot Noir": 2.3,
+            "Cabernet Sauvignon": 2.1,
+            "Barbera": 1.7,
+            "Tempranillo": 1.9,
+            "Grenache": 1.8,
+            "Riesling": 2.0,
+            "Pinot Bianco": 1.6,
         }
         costo_base = costi_base.get(varieta_vino, 2)  # Valore di default se la varietà non è presente
 
@@ -552,7 +562,7 @@ def get_home():
                 html.H3(
                     "Dashboard",
                     className="sideHeadText",
-                    style={'color': '#365185'}
+                    style={'color': '#E59866'}
                 ),
                 dbc.Container([
                     dcc.DatePickerRange(
