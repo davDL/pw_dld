@@ -34,8 +34,7 @@ def get_global_performances_cards(production_dataset, orders_dataset, workers_da
 
         # Efficienza oraria dei lavoratori:
         # Formula: (Quantità prodotta) / (Ore di lavoro totali dei lavoratori)
-        filtered_workers_dataset = workers_dataset[
-            (workers_dataset['ruolo'] == 'viticoltore') | (workers_dataset['ruolo'] == 'imbottigliatore')]
+        filtered_workers_dataset = workers_dataset[(workers_dataset['ruolo'] == 'viticoltore') | (workers_dataset['ruolo'] == 'imbottigliatore')]
         workers_efficiency = filtered_workers_dataset['quantita_prodotta'].sum() / filtered_workers_dataset['ore_lavoro'].sum()
 
         # Intensità energetica:
@@ -68,17 +67,17 @@ def get_global_performances_cards(production_dataset, orders_dataset, workers_da
         ], className="alignCenterContainer"),
         dbc.Container([
             performance_card("Efficienza oraria dei macchinari",
-                             '{value} kg/h'.format(value=machinery_efficiency.round(3)),
+                             '{value} kg/h'.format(value=machinery_efficiency.round(3) if machinery_efficiency != 0.0 else 0.0),
                              "nel periodo",
                              "cardBase blue",
                              dash.get_asset_url('ic_service_level.png')),
             performance_card("Efficienza oraria dei lavoratori",
-                             '{value} Kg/h'.format(value=workers_efficiency.round(3)),
+                             '{value} Kg/h'.format(value=workers_efficiency.round(3) if workers_efficiency != 0.0 else 0.0),
                              "nel periodo",
                              "cardBase lightViolet",
                              dash.get_asset_url('ic_service_level.png')),
             performance_card("Intensità energetica media/Kg",
-                             '{value} kW/h'.format(value=energy_consumption.round(3)),
+                             '{value} kW/h'.format(value=energy_consumption.round(3) if energy_consumption != 0.0 else 0.0),
                              "nel periodo",
                              "cardBase violet",
                              dash.get_asset_url('ic_service_level.png')),

@@ -536,7 +536,7 @@ def get_home():
             ),
             home_section("Produzioni",
                          table_in_row_production(production_dataset=filtered_production_dataset)
-                         if production_dataset.shape[0] > 0
+                         if filtered_production_dataset.shape[0] > 0
                          else html.H5(["Nessun dato disponibile per il periodo selezionato"],
                                       style={'color': '#365185', 'margin': '32px'})
             ),
