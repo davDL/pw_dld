@@ -30,13 +30,13 @@ def get_global_performances_cards(production_dataset, orders_dataset, workers_da
 
         # Efficienza oraria dei macchinari:
         # Formula: (Quantità prodotta) / (Ore di lavoro totali dei macchinari)
-        machinery_efficiency = machinery_dataset['quantita_prodotta'].sum() // machinery_dataset['ore_lavoro'].sum()
+        machinery_efficiency = machinery_dataset['quantita_prodotta'].sum() / machinery_dataset['ore_lavoro'].sum()
 
         # Efficienza oraria dei lavoratori:
         # Formula: (Quantità prodotta) / (Ore di lavoro totali dei lavoratori)
         filtered_workers_dataset = workers_dataset[
             (workers_dataset['ruolo'] == 'viticoltore') | (workers_dataset['ruolo'] == 'imbottigliatore')]
-        workers_efficiency = filtered_workers_dataset['quantita_prodotta'].sum() // filtered_workers_dataset['ore_lavoro'].sum()
+        workers_efficiency = filtered_workers_dataset['quantita_prodotta'].sum() / filtered_workers_dataset['ore_lavoro'].sum()
 
         # Intensità energetica:
         # Formula: Energia_consumata / Quantità_prodotta
